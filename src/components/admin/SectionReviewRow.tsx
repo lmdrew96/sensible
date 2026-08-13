@@ -17,6 +17,7 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   const generateDraft = useAction(api.modernize.generateDraft);
   const saveDraft = useMutation(api.sections.saveDraft);
   const approve = useMutation(api.sections.approve);
+  const remove = useMutation(api.sections.remove);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -37,6 +38,11 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
       await saveDraft({ sectionId: section._id, modernized: draft });
     }
     await approve({ sectionId: section._id });
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Delete this section? This can't be undone.")) return;
+    await remove({ sectionId: section._id });
   };
 
   return (
@@ -85,6 +91,12 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
           className="rounded bg-green-700 px-3 py-1.5 text-sm text-white"
         >
           Approve
+        </button>
+        <button
+          onClick={handleDelete}
+          className="ml-auto rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+        >
+          Delete
         </button>
       </div>
     </div>

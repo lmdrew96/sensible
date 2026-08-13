@@ -60,3 +60,10 @@ export const approve = mutation({
     await ctx.db.patch(sectionId, { status: "approved", approvedAt: Date.now() });
   },
 });
+
+export const remove = mutation({
+  args: { sectionId: v.id("sections") },
+  handler: async (ctx, { sectionId }) => {
+    await ctx.db.delete(sectionId);
+  },
+});
