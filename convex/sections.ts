@@ -1,6 +1,13 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+export const get = query({
+  args: { sectionId: v.id("sections") },
+  handler: async (ctx, { sectionId }) => {
+    return await ctx.db.get(sectionId);
+  },
+});
+
 export const listApprovedByText = query({
   args: { textId: v.id("texts") },
   handler: async (ctx, { textId }) => {

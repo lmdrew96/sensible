@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as modernize from "../modernize.js";
 import type * as sections from "../sections.js";
 import type * as texts from "../texts.js";
 
@@ -18,6 +19,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  modernize: typeof modernize;
   sections: typeof sections;
   texts: typeof texts;
 }>;

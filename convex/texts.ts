@@ -19,6 +19,13 @@ export const listAll = query({
   },
 });
 
+export const get = query({
+  args: { textId: v.id("texts") },
+  handler: async (ctx, { textId }) => {
+    return await ctx.db.get(textId);
+  },
+});
+
 export const getBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
