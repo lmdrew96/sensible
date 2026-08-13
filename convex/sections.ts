@@ -61,6 +61,25 @@ export const approve = mutation({
   },
 });
 
+export const approveAll = mutation({
+  args: { textId: v.id("texts") },
+  handler: async (ctx, { textId }) => {
+    const sections = await ctx.db
+      .query("sections")
+      .withIndex("by_text", (q) => q.eq("textId", textId))
+      .collect();
+    const now = Date.now();
+    let count = 0;
+    for (const s of sections) {
+      if (s.status === "draft") {
+        await ctx.db.patch(s._id, { status: "approved", approvedAt: now });
+        count++;
+      }
+    }
+    return count;
+  },
+});
+
 export const remove = mutation({
   args: { sectionId: v.id("sections") },
   handler: async (ctx, { sectionId }) => {
