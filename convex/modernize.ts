@@ -31,7 +31,7 @@ ${DIFFICULTY_GUIDANCE[text.difficultyType]}
 This passage is from "${text.title}" by ${text.author} (${text.year}). Output only the modernized passage, with no preamble and no markdown formatting.`;
 
     const response = await anthropic.messages.create({
-      model: "claude-opus-5",
+      model: "claude-sonnet-5",
       max_tokens: 8192,
       system,
       messages: [{ role: "user", content: section.original }],

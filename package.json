@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "import-texts": "tsx --env-file=.env.local scripts/import.ts"
+    "import-texts": "tsx --env-file=.env.local scripts/import.ts",
+    "generate-drafts": "tsx --env-file=.env.local scripts/generate-drafts.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",
