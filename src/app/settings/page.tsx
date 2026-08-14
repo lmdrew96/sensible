@@ -10,7 +10,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <main className="mx-auto max-w-2xl p-8">
+    <main className="mx-auto max-w-3xl p-8 min-w-3/4">
       <h1 className="font-header text-3xl font-semibold">Settings</h1>
 
       <section className="mt-8">
@@ -68,7 +68,7 @@ export default function SettingsPage() {
                   : "border-border hover:border-foreground/50"
               }`}
             >
-              <div className="flex w-40 shrink-0 items-center gap-2">
+              <div className="flex w-50 shrink-0 items-center gap-2">
                 <input
                   type="radio"
                   name="reader-font"

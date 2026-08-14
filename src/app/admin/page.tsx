@@ -16,7 +16,7 @@ export default function AdminPage() {
   };
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
+    <main className="mx-auto max-w-3xl p-8 min-w-3/4">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="font-header text-2xl font-semibold">Admin — Review Texts</h1>
         <button

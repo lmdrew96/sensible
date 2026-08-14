@@ -53,7 +53,7 @@ export default function LibraryPage() {
   }, [texts, search, sort, difficultyFilter]);
 
   return (
-    <main className="mx-auto max-w-3xl p-8">
+    <main className="mx-auto max-w-3xl p-8 min-w-3/4">
       <header className="mb-8">
         <h1 className="font-header text-3xl font-semibold">The Library</h1>
         <p className="mt-1 text-muted-foreground">

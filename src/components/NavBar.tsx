@@ -36,8 +36,8 @@ export function NavBar() {
 
   return (
     <header className="border-b border-border">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link href="/" className="font-header text-xl">
+      <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4 min-w-4/5">
+        <Link href="/" className="font-header text-3xl">
           Sensible
         </Link>
         <div className="flex items-center gap-6 text-sm">
