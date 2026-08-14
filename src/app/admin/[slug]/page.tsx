@@ -14,11 +14,13 @@ export default function AdminTextPage() {
     text ? { textId: text._id } : "skip",
   );
   const approveAll = useMutation(api.sections.approveAll);
+  const publish = useMutation(api.texts.publish);
 
   if (text === undefined) return <main className="p-8">Loading…</main>;
   if (text === null) return <main className="p-8">Text not found.</main>;
 
   const draftCount = sections?.filter((s) => s.status === "draft").length ?? 0;
+  const unapprovedCount = sections?.filter((s) => s.status !== "approved").length ?? 0;
 
   const handleApproveAll = async () => {
     if (draftCount === 0) return;
@@ -28,11 +30,29 @@ export default function AdminTextPage() {
     await approveAll({ textId: text._id });
   };
 
+  const handlePublish = async () => {
+    if (!confirm(`Publish "${text.title}"? It will appear in the public library.`)) {
+      return;
+    }
+    await publish({ textId: text._id });
+  };
+
   return (
     <main className="mx-auto max-w-5xl p-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{text.title}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="font-header text-2xl font-semibold">{text.title}</h1>
+            <span
+              className={`rounded px-2 py-0.5 text-xs font-medium ${
+                text.status === "published"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-neutral-100 text-neutral-600"
+              }`}
+            >
+              {text.status}
+            </span>
+          </div>
           <p className="text-sm text-neutral-500">
             {text.author}, {text.year} — {sections?.length ?? 0} section
             {sections?.length === 1 ? "" : "s"}
@@ -51,6 +71,18 @@ export default function AdminTextPage() {
             className="rounded bg-green-700 px-3 py-1.5 text-sm text-white disabled:opacity-40"
           >
             Approve All ({draftCount})
+          </button>
+          <button
+            onClick={handlePublish}
+            disabled={text.status === "published" || unapprovedCount > 0}
+            title={
+              unapprovedCount > 0
+                ? `${unapprovedCount} section${unapprovedCount === 1 ? "" : "s"} not yet approved`
+                : undefined
+            }
+            className="rounded bg-neutral-800 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+          >
+            {text.status === "published" ? "Published" : "Publish"}
           </button>
         </div>
       </div>

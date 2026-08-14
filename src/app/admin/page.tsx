@@ -1,15 +1,31 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 
 export default function AdminPage() {
   const texts = useQuery(api.texts.listAll);
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await fetch("/api/admin-logout", { method: "POST" });
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-6 text-2xl font-semibold">Admin — Review Texts</h1>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="font-header text-2xl font-semibold">Admin — Review Texts</h1>
+        <button
+          onClick={handleSignOut}
+          className="rounded border border-neutral-300 px-3 py-1.5 text-sm"
+        >
+          Sign out
+        </button>
+      </div>
       {texts === undefined && <p className="text-neutral-500">Loading…</p>}
       {texts?.length === 0 && (
         <p className="text-neutral-500">No texts yet.</p>
