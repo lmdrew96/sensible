@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Doc } from "@convex/_generated/dataModel";
@@ -12,31 +12,48 @@ const STATUS_STYLES: Record<Doc<"sections">["status"], string> = {
   pending: "bg-muted text-muted-foreground",
 };
 
+const AUTOSAVE_DELAY_MS = 800;
+
 export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   const [draft, setDraft] = useState(section.modernized ?? "");
   const [generating, setGenerating] = useState(false);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const generateDraft = useAction(api.modernize.generateDraft);
   const saveDraft = useMutation(api.sections.saveDraft);
   const approve = useMutation(api.sections.approve);
   const remove = useMutation(api.sections.remove);
 
+  // Autosave: debounce edits so every keystroke doesn't fire a mutation, but
+  // typing without ever clicking a button still persists and flips the
+  // status badge to "draft" automatically.
+  const lastSaved = useRef(section.modernized ?? "");
+  useEffect(() => {
+    if (draft === lastSaved.current) return;
+    setSaveState("saving");
+    const timer = setTimeout(async () => {
+      await saveDraft({ sectionId: section._id, modernized: draft });
+      lastSaved.current = draft;
+      setSaveState("saved");
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [draft, saveDraft, section._id]);
+
   const handleGenerate = async () => {
     setGenerating(true);
     try {
       const modernized = await generateDraft({ sectionId: section._id });
+      lastSaved.current = modernized;
       setDraft(modernized);
+      setSaveState("saved");
     } finally {
       setGenerating(false);
     }
   };
 
-  const handleSave = async () => {
-    await saveDraft({ sectionId: section._id, modernized: draft });
-  };
-
   const handleApprove = async () => {
-    if (draft !== section.modernized) {
+    if (draft !== lastSaved.current) {
       await saveDraft({ sectionId: section._id, modernized: draft });
+      lastSaved.current = draft;
     }
     await approve({ sectionId: section._id });
   };
@@ -64,9 +81,14 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
           <Markdown className="prose-sm">{withSpeaker(section.original, section.speaker)}</Markdown>
         </div>
         <div>
-          <p className="mb-1 text-xs text-muted-foreground">
-            Modernized{section.speaker ? ` — ${section.speaker}` : ""}
-          </p>
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Modernized{section.speaker ? ` — ${section.speaker}` : ""}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {saveState === "saving" ? "Saving…" : saveState === "saved" ? "Saved" : ""}
+            </p>
+          </div>
           <textarea
             className="h-full min-h-32 w-full rounded border border-border p-2 text-sm"
             value={draft}
@@ -82,12 +104,6 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
           className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-50"
         >
           {generating ? "Generating…" : draft ? "Regenerate Draft" : "Generate Draft"}
-        </button>
-        <button
-          onClick={handleSave}
-          className="rounded border border-border px-3 py-1.5 text-sm"
-        >
-          Save
         </button>
         <button
           onClick={handleApprove}
