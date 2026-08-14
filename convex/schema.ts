@@ -38,4 +38,14 @@ export default defineSchema({
     ),
     approvedAt: v.optional(v.number()),
   }).index("by_text", ["textId", "order"]),
+
+  highlights: defineTable({
+    sectionId: v.id("sections"),
+    side: v.union(v.literal("original"), v.literal("modernized")),
+    userId: v.id("users"),
+    startOffset: v.number(),
+    endOffset: v.number(),
+    text: v.string(),
+    note: v.optional(v.string()),
+  }).index("by_section_and_side_and_user", ["sectionId", "side", "userId"]),
 });

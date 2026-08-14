@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
-import { Markdown, withSpeaker } from "@/components/Markdown";
+import { HighlightableText } from "@/components/HighlightableText";
 
 export default function ReaderPage() {
   const params = useParams<{ slug: string }>();
@@ -54,16 +54,31 @@ export default function ReaderPage() {
       <div className="reader-text">
         {sections?.map((section) =>
           singleSide ? (
-            <Markdown key={section._id} className="border-b border-border py-4">
-              {withSpeaker(section.modernized ?? "", section.speaker)}
-            </Markdown>
+            <HighlightableText
+              key={section._id}
+              sectionId={section._id}
+              side="modernized"
+              text={section.modernized ?? ""}
+              speaker={section.speaker}
+              className="border-b border-border py-4"
+            />
           ) : (
             <div
               key={section._id}
               className="grid grid-cols-2 gap-x-8 border-b border-border py-4"
             >
-              <Markdown>{withSpeaker(section.original, section.speaker)}</Markdown>
-              <Markdown>{withSpeaker(section.modernized ?? "", section.speaker)}</Markdown>
+              <HighlightableText
+                sectionId={section._id}
+                side="original"
+                text={section.original}
+                speaker={section.speaker}
+              />
+              <HighlightableText
+                sectionId={section._id}
+                side="modernized"
+                text={section.modernized ?? ""}
+                speaker={section.speaker}
+              />
             </div>
           ),
         )}
