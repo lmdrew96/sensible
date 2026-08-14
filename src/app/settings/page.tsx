@@ -79,11 +79,7 @@ export default function SettingsPage() {
                 <span className="text-sm font-medium">{option.label}</span>
                 <span className="text-xs text-muted-foreground">{option.sample}</span>
               </div>
-              <span
-                data-reader-font={option.value}
-                className="text-sm"
-                style={{ fontFamily: `var(--font-reader-${option.value})` }}
-              >
+              <span className="text-sm" style={{ fontFamily: `var(${option.cssVar})` }}>
                 The quick brown fox
               </span>
             </label>

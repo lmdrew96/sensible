@@ -1,9 +1,16 @@
+// cssVar points at the real CSS custom property next/font/local declares
+// for that font (see src/fonts.ts). Tailwind's `@theme inline` tokens
+// (--font-reader-serif etc., used for the font-reader-* utility classes)
+// are NOT emitted as standalone custom properties -- inline only folds
+// them into the generated utility rule -- so `var(--font-reader-serif)`
+// in a plain style prop resolves to nothing. Reference the underlying var
+// directly instead.
 export const READER_FONTS = [
-  { value: "serif", label: "Serif", sample: "Arvo" },
-  { value: "sans", label: "Sans", sample: "Jost" },
-  { value: "mono", label: "Mono", sample: "Brass Mono" },
-  { value: "dyslexic-a", label: "Dyslexic A", sample: "Cadman" },
-  { value: "dyslexic-b", label: "Dyslexic B", sample: "OpenDyslexic" },
+  { value: "serif", label: "Serif", sample: "Arvo", cssVar: "--font-typewriter" },
+  { value: "sans", label: "Sans", sample: "Jost", cssVar: "--font-avenir" },
+  { value: "mono", label: "Mono", sample: "Brass Mono", cssVar: "--font-brassmono" },
+  { value: "dyslexic-a", label: "Dyslexic A", sample: "Cadman", cssVar: "--font-cadman" },
+  { value: "dyslexic-b", label: "Dyslexic B", sample: "OpenDyslexic", cssVar: "--font-opendyslexic" },
 ] as const;
 
 export type ReaderFont = (typeof READER_FONTS)[number]["value"];
