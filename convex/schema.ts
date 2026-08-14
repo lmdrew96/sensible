@@ -1,7 +1,10 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
+  ...authTables,
+
   texts: defineTable({
     title: v.string(),
     slug: v.string(),
@@ -25,6 +28,7 @@ export default defineSchema({
     textId: v.id("texts"),
     order: v.number(),
     original: v.string(),
+    speaker: v.optional(v.string()),
     modernized: v.optional(v.string()),
     gloss: v.optional(v.string()),
     status: v.union(
