@@ -9,7 +9,7 @@ import { Markdown, withSpeaker } from "@/components/Markdown";
 const STATUS_STYLES: Record<Doc<"sections">["status"], string> = {
   approved: "bg-green-100 text-green-800",
   draft: "bg-amber-100 text-amber-800",
-  pending: "bg-neutral-100 text-neutral-600",
+  pending: "bg-muted text-muted-foreground",
 };
 
 export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
@@ -47,9 +47,9 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   };
 
   return (
-    <div className="border-b border-neutral-200 py-6">
+    <div className="border-b border-border py-6">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium tracking-wide text-neutral-500 uppercase">
+        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Section {section.order + 1}
         </span>
         <span
@@ -60,15 +60,15 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="mb-1 text-xs text-neutral-500">Original</p>
+          <p className="mb-1 text-xs text-muted-foreground">Original</p>
           <Markdown className="prose-sm">{withSpeaker(section.original, section.speaker)}</Markdown>
         </div>
         <div>
-          <p className="mb-1 text-xs text-neutral-500">
+          <p className="mb-1 text-xs text-muted-foreground">
             Modernized{section.speaker ? ` — ${section.speaker}` : ""}
           </p>
           <textarea
-            className="h-full min-h-32 w-full rounded border border-neutral-300 p-2 text-sm"
+            className="h-full min-h-32 w-full rounded border border-border p-2 text-sm"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="No draft yet — click Generate Draft"
@@ -79,13 +79,13 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="rounded bg-neutral-800 px-3 py-1.5 text-sm text-white disabled:opacity-50"
+          className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-50"
         >
           {generating ? "Generating…" : draft ? "Regenerate Draft" : "Generate Draft"}
         </button>
         <button
           onClick={handleSave}
-          className="rounded border border-neutral-300 px-3 py-1.5 text-sm"
+          className="rounded border border-border px-3 py-1.5 text-sm"
         >
           Save
         </button>

@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import "./globals.css";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
-import { AccountStatus } from "@/components/AccountStatus";
+import { NavBar } from "@/components/NavBar";
 import { allFontVariables } from "@/fonts";
 import { READER_FONT_STORAGE_KEY } from "@/lib/reader-font";
+import { THEME_STORAGE_KEY, MODE_STORAGE_KEY, DEFAULT_THEME, DEFAULT_MODE } from "@/lib/theme";
 
 export const metadata: Metadata = {
   title: "Sensible",
   description: "A side-by-side reader for old writings in plain contemporary English.",
 };
 
-// Applies the saved reader font before first paint so switching /settings
-// doesn't cause a visible flash from the default back to the saved choice.
-const READER_FONT_INIT_SCRIPT = `(function(){try{var f=localStorage.getItem(${JSON.stringify(READER_FONT_STORAGE_KEY)});if(f)document.documentElement.dataset.readerFont=f;}catch(e){}})();`;
+// Applies the saved reader font/theme/mode before first paint so switching
+// in /settings or the nav toggle doesn't cause a visible flash back to the
+// default on reload.
+const PREFS_INIT_SCRIPT = `(function(){try{
+  var f=localStorage.getItem(${JSON.stringify(READER_FONT_STORAGE_KEY)});if(f)document.documentElement.dataset.readerFont=f;
+  document.documentElement.dataset.theme=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)})||${JSON.stringify(DEFAULT_THEME)};
+  document.documentElement.dataset.mode=localStorage.getItem(${JSON.stringify(MODE_STORAGE_KEY)})||${JSON.stringify(DEFAULT_MODE)};
+}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
@@ -23,20 +28,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <script dangerouslySetInnerHTML={{ __html: READER_FONT_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: PREFS_INIT_SCRIPT }} />
         <ConvexClientProvider>
+          <NavBar />
           {children}
-          <footer className="border-t border-neutral-200 p-4 text-center text-xs text-neutral-400">
-            <AccountStatus />
-            <span className="mx-2">·</span>
-            <Link href="/settings" className="hover:underline">
-              Settings
-            </Link>
-            <span className="mx-2">·</span>
-            <Link href="/admin" className="hover:underline">
-              Admin
-            </Link>
-          </footer>
         </ConvexClientProvider>
       </body>
     </html>

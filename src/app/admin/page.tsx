@@ -21,29 +21,29 @@ export default function AdminPage() {
         <h1 className="font-header text-2xl font-semibold">Admin — Review Texts</h1>
         <button
           onClick={handleSignOut}
-          className="rounded border border-neutral-300 px-3 py-1.5 text-sm"
+          className="rounded border border-border px-3 py-1.5 text-sm"
         >
           Sign out
         </button>
       </div>
-      {texts === undefined && <p className="text-neutral-500">Loading…</p>}
+      {texts === undefined && <p className="text-muted-foreground">Loading…</p>}
       {texts?.length === 0 && (
-        <p className="text-neutral-500">No texts yet.</p>
+        <p className="text-muted-foreground">No texts yet.</p>
       )}
-      <ul className="divide-y divide-neutral-200">
+      <ul className="divide-y divide-border">
         {texts?.map((text) => (
           <li key={text._id} className="flex items-center justify-between py-3">
             <div>
               <Link href={`/admin/${text.slug}`} className="font-medium hover:underline">
                 {text.title}
               </Link>
-              <p className="text-sm text-neutral-500">{text.author}</p>
+              <p className="text-sm text-muted-foreground">{text.author}</p>
             </div>
             <span
               className={`rounded px-2 py-0.5 text-xs font-medium ${
                 text.status === "published"
                   ? "bg-green-100 text-green-800"
-                  : "bg-neutral-100 text-neutral-600"
+                  : "bg-muted text-muted-foreground"
               }`}
             >
               {text.status}

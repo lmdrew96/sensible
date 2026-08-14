@@ -47,13 +47,13 @@ export default function AdminTextPage() {
               className={`rounded px-2 py-0.5 text-xs font-medium ${
                 text.status === "published"
                   ? "bg-green-100 text-green-800"
-                  : "bg-neutral-100 text-neutral-600"
+                  : "bg-muted text-muted-foreground"
               }`}
             >
               {text.status}
             </span>
           </div>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted-foreground">
             {text.author}, {text.year} — {sections?.length ?? 0} section
             {sections?.length === 1 ? "" : "s"}
           </p>
@@ -61,7 +61,7 @@ export default function AdminTextPage() {
         <div className="flex gap-2">
           <Link
             href={`/read/${text.slug}`}
-            className="rounded border border-neutral-300 px-3 py-1.5 text-sm"
+            className="rounded border border-border px-3 py-1.5 text-sm"
           >
             View reader
           </Link>
@@ -80,7 +80,7 @@ export default function AdminTextPage() {
                 ? `${unapprovedCount} section${unapprovedCount === 1 ? "" : "s"} not yet approved`
                 : undefined
             }
-            className="rounded bg-neutral-800 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+            className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-40"
           >
             {text.status === "published" ? "Published" : "Publish"}
           </button>

@@ -27,7 +27,7 @@ import remarkGfm from "remark-gfm";
 // markdown produces.
 export function Markdown({ children, className }: { children: string; className?: string }) {
   return (
-    <div className={`prose prose-neutral max-w-none ${className ?? ""}`}>
+    <div className={`prose prose-neutral dark:prose-invert max-w-none ${className ?? ""}`}>
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{children}</ReactMarkdown>
     </div>
   );

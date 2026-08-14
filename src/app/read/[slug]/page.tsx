@@ -21,31 +21,31 @@ export default function ReaderPage() {
 
   return (
     <main className="mx-auto max-w-5xl p-8">
-      <header className="mb-8 border-b border-neutral-200 pb-6">
+      <header className="mb-8 border-b border-border pb-6">
         <h1 className="font-header text-3xl font-semibold">{text.title}</h1>
-        <p className="mt-1 text-neutral-500">
+        <p className="mt-1 text-muted-foreground">
           {text.author}, {text.year}
         </p>
         {text.isTranslation && text.translationNote && (
-          <p className="mt-1 text-sm text-neutral-400 italic">{text.translationNote}</p>
+          <p className="mt-1 text-sm text-muted-foreground italic">{text.translationNote}</p>
         )}
         <button
           onClick={() => setSingleSide((v) => !v)}
-          className="mt-4 rounded border border-neutral-300 px-3 py-1.5 text-sm"
+          className="mt-4 rounded border border-border px-3 py-1.5 text-sm"
         >
           {singleSide ? "Show original side by side" : "Modernized only"}
         </button>
       </header>
 
-      {sections === undefined && <p className="text-neutral-500">Loading…</p>}
+      {sections === undefined && <p className="text-muted-foreground">Loading…</p>}
       {sections?.length === 0 && (
-        <p className="text-neutral-500">
+        <p className="text-muted-foreground">
           No approved sections yet — this text isn&apos;t ready for readers.
         </p>
       )}
 
       {!singleSide && (
-        <div className="grid grid-cols-2 gap-x-8 border-b border-neutral-200 pb-2 text-xs font-medium tracking-wide text-neutral-400 uppercase">
+        <div className="grid grid-cols-2 gap-x-8 border-b border-border pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
           <span>Original</span>
           <span>Modernized</span>
         </div>
@@ -54,13 +54,13 @@ export default function ReaderPage() {
       <div className="reader-text">
         {sections?.map((section) =>
           singleSide ? (
-            <Markdown key={section._id} className="border-b border-neutral-100 py-4">
+            <Markdown key={section._id} className="border-b border-border py-4">
               {withSpeaker(section.modernized ?? "", section.speaker)}
             </Markdown>
           ) : (
             <div
               key={section._id}
-              className="grid grid-cols-2 gap-x-8 border-b border-neutral-100 py-4"
+              className="grid grid-cols-2 gap-x-8 border-b border-border py-4"
             >
               <Markdown>{withSpeaker(section.original, section.speaker)}</Markdown>
               <Markdown>{withSpeaker(section.modernized ?? "", section.speaker)}</Markdown>

@@ -1,14 +1,90 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Redefine Tailwind's `dark:` variant to key off our explicit data-mode
+   attribute (set by useTheme) instead of prefers-color-scheme -- mode is a
+   user choice via the nav toggle, not inferred from the OS. */
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+/* Default: Henna theme, light mode. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ccb8ba;
+  --foreground: #434339;
+  --muted: #b08e85;
+  --muted-foreground: #4f4d42;
+  --border: #6f6157;
+  --accent: #7e7063;
+  --accent-foreground: #ffffff;
+}
+
+html[data-theme="henna"][data-mode="light"] {
+  --background: #ccb8ba;
+  --foreground: #434339;
+  --muted: #b08e85;
+  --muted-foreground: #4f4d42;
+  --border: #6f6157;
+  --accent: #7e7063;
+  --accent-foreground: #ffffff;
+}
+
+html[data-theme="henna"][data-mode="dark"] {
+  --background: #434339;
+  --foreground: #ccb8ba;
+  --muted: #615b50;
+  --muted-foreground: #c2a9a7;
+  --border: #9c8e8a;
+  --accent: #7e7063;
+  --accent-foreground: #ffffff;
+}
+
+html[data-theme="sage"][data-mode="light"] {
+  --background: #b5c0b4;
+  --foreground: #374141;
+  --muted: #a19886;
+  --muted-foreground: #424e4b;
+  --border: #61645d;
+  --accent: #727767;
+  --accent-foreground: #ffffff;
+}
+
+html[data-theme="sage"][data-mode="dark"] {
+  --background: #374141;
+  --foreground: #b5c0b4;
+  --muted: #57665d;
+  --muted-foreground: #abac9d;
+  --border: #818f84;
+  --accent: #727767;
+  --accent-foreground: #ffffff;
+}
+
+html[data-theme="indigo"][data-mode="light"] {
+  --background: #abc2cb;
+  --foreground: #4b3c4f;
+  --muted: #869aac;
+  --muted-foreground: #544963;
+  --border: #666679;
+  --accent: #6b7491;
+  --accent-foreground: #ffffff;
+}
+
+html[data-theme="indigo"][data-mode="dark"] {
+  --background: #4b3c4f;
+  --foreground: #abc2cb;
+  --muted: #5d5677;
+  --muted-foreground: #9ab0bd;
+  --border: #848ca1;
+  --accent: #6b7491;
+  --accent-foreground: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --font-sans: var(--font-aliquam);
   --font-mono: var(--font-monofont);
   --font-header: var(--font-fredericka);
@@ -17,13 +93,6 @@
   --font-reader-mono: var(--font-brassmono);
   --font-reader-dyslexic-a: var(--font-cadman);
   --font-reader-dyslexic-b: var(--font-opendyslexic);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 :root {

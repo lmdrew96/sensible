@@ -45,13 +45,13 @@ export default function AdminLoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded border border-border px-3 py-2 text-sm"
         />
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={submitting || !password}
-          className="mt-3 w-full rounded bg-neutral-800 px-4 py-2 text-sm text-white disabled:opacity-50"
+          className="mt-3 w-full rounded bg-accent px-4 py-2 text-sm text-accent-foreground disabled:opacity-50"
         >
           {submitting ? "Checking…" : "Log in"}
         </button>
