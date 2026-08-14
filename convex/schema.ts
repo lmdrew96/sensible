@@ -20,6 +20,7 @@ export default defineSchema({
     translationNote: v.optional(v.string()),
     libraryOrder: v.number(),
     status: v.union(v.literal("draft"), v.literal("published")),
+    glossSweepActive: v.optional(v.boolean()),
   })
     .index("by_slug", ["slug"])
     .index("by_libraryOrder", ["libraryOrder"]),
@@ -30,7 +31,7 @@ export default defineSchema({
     original: v.string(),
     speaker: v.optional(v.string()),
     modernized: v.optional(v.string()),
-    gloss: v.optional(v.string()),
+    glossCheckedAt: v.optional(v.number()),
     status: v.union(
       v.literal("pending"),
       v.literal("draft"),
@@ -38,6 +39,13 @@ export default defineSchema({
     ),
     approvedAt: v.optional(v.number()),
   }).index("by_text", ["textId", "order"]),
+
+  glosses: defineTable({
+    sectionId: v.id("sections"),
+    term: v.string(),
+    explanation: v.string(),
+    status: v.union(v.literal("suggested"), v.literal("approved")),
+  }).index("by_section", ["sectionId"]),
 
   highlights: defineTable({
     sectionId: v.id("sections"),

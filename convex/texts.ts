@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const listPublished = query({
   args: {},
@@ -61,6 +62,30 @@ export const publish = mutation({
   args: { textId: v.id("texts") },
   handler: async (ctx, { textId }) => {
     await ctx.db.patch(textId, { status: "published" });
+  },
+});
+
+export const startGlossSweep = mutation({
+  args: { textId: v.id("texts") },
+  handler: async (ctx, { textId }) => {
+    await ctx.db.patch(textId, { glossSweepActive: true });
+    await ctx.scheduler.runAfter(0, internal.glossify.sweepText, { textId });
+  },
+});
+
+export const cancelGlossSweep = mutation({
+  args: { textId: v.id("texts") },
+  handler: async (ctx, { textId }) => {
+    await ctx.db.patch(textId, { glossSweepActive: false });
+  },
+});
+
+// Called only from glossify.sweepText once it runs out of unchecked
+// sections, so the sweep button resets on its own without a manual cancel.
+export const finishGlossSweep = internalMutation({
+  args: { textId: v.id("texts") },
+  handler: async (ctx, { textId }) => {
+    await ctx.db.patch(textId, { glossSweepActive: false });
   },
 });
 

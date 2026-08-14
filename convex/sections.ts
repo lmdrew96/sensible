@@ -30,6 +30,18 @@ export const listApprovedByText = query({
   },
 });
 
+export const listPrecedingContext = query({
+  args: { textId: v.id("texts"), order: v.number(), limit: v.optional(v.number()) },
+  handler: async (ctx, { textId, order, limit }) => {
+    const preceding = await ctx.db
+      .query("sections")
+      .withIndex("by_text", (q) => q.eq("textId", textId).lt("order", order))
+      .order("desc")
+      .take(limit ?? 4);
+    return preceding.reverse();
+  },
+});
+
 export const listAllByText = query({
   args: { textId: v.id("texts") },
   handler: async (ctx, { textId }) => {
@@ -57,12 +69,10 @@ export const saveDraft = mutation({
   args: {
     sectionId: v.id("sections"),
     modernized: v.string(),
-    gloss: v.optional(v.string()),
   },
-  handler: async (ctx, { sectionId, modernized, gloss }) => {
+  handler: async (ctx, { sectionId, modernized }) => {
     await ctx.db.patch(sectionId, {
       modernized: stripPreamble(modernized),
-      gloss,
       status: "draft",
     });
   },

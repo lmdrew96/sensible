@@ -10,6 +10,8 @@
 
 import type * as auth from "../auth.js";
 import type * as emails from "../emails.js";
+import type * as glosses from "../glosses.js";
+import type * as glossify from "../glossify.js";
 import type * as highlights from "../highlights.js";
 import type * as http from "../http.js";
 import type * as modernize from "../modernize.js";
@@ -25,6 +27,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   emails: typeof emails;
+  glosses: typeof glosses;
+  glossify: typeof glossify;
   highlights: typeof highlights;
   http: typeof http;
   modernize: typeof modernize;

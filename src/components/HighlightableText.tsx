@@ -17,12 +17,39 @@ function offsetWithinContainer(container: Node, node: Node, offset: number): num
 }
 
 type Highlight = Doc<"highlights">;
+type Gloss = Doc<"glosses">;
+type GlossRange = { start: number; end: number; gloss: Gloss };
 
-// Merges format ranges (bold/italic/heading, from the modernization) and
-// highlight ranges (per-reader, from the highlights table) into a flat,
+// Approved glosses are stored as a verbatim term, not offsets -- find every
+// non-overlapping occurrence of each term in the plain text at render time.
+// This is more forgiving than stored offsets if the modernized text is
+// edited after the gloss was approved, and needs no coordination with
+// src/lib/richText.ts's offset math.
+function findGlossRanges(plain: string, glosses: Gloss[]): GlossRange[] {
+  const ranges: GlossRange[] = [];
+  for (const gloss of glosses) {
+    let from = 0;
+    while (from <= plain.length) {
+      const idx = plain.indexOf(gloss.term, from);
+      if (idx === -1) break;
+      ranges.push({ start: idx, end: idx + gloss.term.length, gloss });
+      from = idx + gloss.term.length;
+    }
+  }
+  return ranges;
+}
+
+// Merges format ranges (bold/italic/heading, from the modernization),
+// highlight ranges (per-reader, from the highlights table), and gloss
+// ranges (admin-approved, from the glosses table) into a flat,
 // non-overlapping list of styled segments -- the same technique a rich
 // text editor uses to render style runs over plain text.
-function buildSegments(length: number, formatRanges: FormatRange[], highlights: Highlight[]) {
+function buildSegments(
+  length: number,
+  formatRanges: FormatRange[],
+  highlights: Highlight[],
+  glossRanges: GlossRange[],
+) {
   const points = new Set<number>([0, length]);
   for (const r of formatRanges) {
     points.add(r.start);
@@ -31,6 +58,10 @@ function buildSegments(length: number, formatRanges: FormatRange[], highlights: 
   for (const h of highlights) {
     points.add(h.startOffset);
     points.add(h.endOffset);
+  }
+  for (const g of glossRanges) {
+    points.add(g.start);
+    points.add(g.end);
   }
   const sorted = [...points].sort((a, b) => a - b);
 
@@ -41,6 +72,7 @@ function buildSegments(length: number, formatRanges: FormatRange[], highlights: 
     italic: boolean;
     headingLevel: 1 | 2 | 3 | undefined;
     highlight: Highlight | undefined;
+    gloss: Gloss | undefined;
   }[] = [];
   for (let i = 0; i < sorted.length - 1; i++) {
     const start = sorted[i];
@@ -54,6 +86,7 @@ function buildSegments(length: number, formatRanges: FormatRange[], highlights: 
       headingLevel: formatRanges.find((r) => r.type === "heading" && r.start <= start && r.end >= end)
         ?.level,
       highlight: highlights.find((h) => h.startOffset <= start && h.endOffset >= end),
+      gloss: glossRanges.find((g) => g.start <= start && g.end >= end)?.gloss,
     });
   }
   return segments;
@@ -84,6 +117,15 @@ export function HighlightableText({
   const createHighlight = useMutation(api.highlights.create);
   const setNote = useMutation(api.highlights.setNote);
   const removeHighlight = useMutation(api.highlights.remove);
+
+  // Glosses are authored against the modernized text -- the original side
+  // never shows them.
+  const glossesResult = useQuery(
+    api.glosses.listApprovedForSection,
+    side === "modernized" ? { sectionId } : "skip",
+  );
+  const glosses = useMemo(() => glossesResult ?? [], [glossesResult]);
+  const [activeGloss, setActiveGloss] = useState<Gloss | null>(null);
 
   // Original text is verbatim historical source -- never reinterpret stray
   // asterisks/pound signs as formatting. Only the LLM-authored modernized
@@ -141,12 +183,25 @@ export function HighlightableText({
     setActiveHighlight(null);
   };
 
-  const segments = buildSegments(plain.length, ranges, highlights);
+  const glossRanges = useMemo(() => findGlossRanges(plain, glosses), [plain, glosses]);
+  const segments = buildSegments(plain.length, ranges, highlights, glossRanges);
   const rendered: ReactNode = segments.map((seg) => {
     let node: ReactNode = plain.slice(seg.start, seg.end);
     if (seg.bold) node = <strong>{node}</strong>;
     if (seg.italic) node = <em>{node}</em>;
     if (seg.headingLevel) node = <span className={HEADING_SIZE[seg.headingLevel]}>{node}</span>;
+    if (seg.gloss) {
+      const g = seg.gloss;
+      node = (
+        <button
+          type="button"
+          onClick={() => setActiveGloss((current) => (current?._id === g._id ? null : g))}
+          className="cursor-help underline decoration-dotted decoration-muted-foreground underline-offset-4"
+        >
+          {node}
+        </button>
+      );
+    }
     if (seg.highlight) {
       const h = seg.highlight;
       node = (
@@ -170,6 +225,18 @@ export function HighlightableText({
       </p>
       {signInHint && (
         <p className="mt-1 text-xs text-muted-foreground">Sign in to highlight and annotate.</p>
+      )}
+      {activeGloss && (
+        <div className="mt-2 rounded border border-border bg-muted/40 p-3 text-sm">
+          <p className="font-medium">{activeGloss.term}</p>
+          <p className="mt-1 text-muted-foreground">{activeGloss.explanation}</p>
+          <button
+            onClick={() => setActiveGloss(null)}
+            className="mt-2 text-xs text-muted-foreground hover:underline"
+          >
+            Close
+          </button>
+        </div>
       )}
       {activeHighlight && (
         <div className="mt-2 rounded border border-border bg-muted/40 p-3">

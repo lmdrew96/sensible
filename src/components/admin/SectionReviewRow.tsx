@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useAction, useMutation } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Doc } from "@convex/_generated/dataModel";
 import { Markdown, withSpeaker } from "@/components/Markdown";
@@ -14,14 +14,25 @@ const STATUS_STYLES: Record<Doc<"sections">["status"], string> = {
 
 const AUTOSAVE_DELAY_MS = 800;
 
+const GLOSS_STATUS_STYLES: Record<Doc<"glosses">["status"], string> = {
+  approved: "bg-green-100 text-green-800",
+  suggested: "bg-amber-100 text-amber-800",
+};
+
 export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   const [draft, setDraft] = useState(section.modernized ?? "");
   const [generating, setGenerating] = useState(false);
+  const [glossing, setGlossing] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const generateDraft = useAction(api.modernize.generateDraft);
   const saveDraft = useMutation(api.sections.saveDraft);
   const approve = useMutation(api.sections.approve);
   const remove = useMutation(api.sections.remove);
+
+  const glosses = useQuery(api.glosses.listForSection, { sectionId: section._id }) ?? [];
+  const generateGlossSuggestions = useAction(api.glossify.generateSuggestions);
+  const approveGloss = useMutation(api.glosses.approve);
+  const removeGloss = useMutation(api.glosses.remove);
 
   // Autosave: debounce edits so every keystroke doesn't fire a mutation, but
   // typing without ever clicking a button still persists and flips the
@@ -61,6 +72,15 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   const handleDelete = async () => {
     if (!confirm("Delete this section? This can't be undone.")) return;
     await remove({ sectionId: section._id });
+  };
+
+  const handleSuggestGlosses = async () => {
+    setGlossing(true);
+    try {
+      await generateGlossSuggestions({ sectionId: section._id });
+    } finally {
+      setGlossing(false);
+    }
   };
 
   return (
@@ -112,12 +132,56 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
           Approve
         </button>
         <button
+          onClick={handleSuggestGlosses}
+          disabled={glossing || !draft}
+          className="rounded border border-border px-3 py-1.5 text-sm disabled:opacity-50"
+        >
+          {glossing ? "Suggesting…" : glosses.length ? "Re-suggest Glosses" : "Suggest Glosses"}
+        </button>
+        <button
           onClick={handleDelete}
           className="ml-auto rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
         >
           Delete
         </button>
       </div>
+
+      {glosses.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {glosses.map((gloss) => (
+            <li
+              key={gloss._id}
+              className="flex items-start justify-between gap-3 rounded border border-border p-2 text-sm"
+            >
+              <div>
+                <span
+                  className={`mr-2 rounded px-1.5 py-0.5 text-xs font-medium ${GLOSS_STATUS_STYLES[gloss.status]}`}
+                >
+                  {gloss.status}
+                </span>
+                <span className="font-medium">{gloss.term}</span>
+                <span className="text-muted-foreground"> — {gloss.explanation}</span>
+              </div>
+              <div className="flex shrink-0 gap-2">
+                {gloss.status === "suggested" && (
+                  <button
+                    onClick={() => approveGloss({ glossId: gloss._id })}
+                    className="rounded bg-green-700 px-2 py-1 text-xs text-white"
+                  >
+                    Approve
+                  </button>
+                )}
+                <button
+                  onClick={() => removeGloss({ glossId: gloss._id })}
+                  className="rounded border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+                >
+                  {gloss.status === "approved" ? "Remove" : "Reject"}
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

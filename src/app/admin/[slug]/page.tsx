@@ -15,12 +15,16 @@ export default function AdminTextPage() {
   );
   const approveAll = useMutation(api.sections.approveAll);
   const publish = useMutation(api.texts.publish);
+  const startGlossSweep = useMutation(api.texts.startGlossSweep);
+  const cancelGlossSweep = useMutation(api.texts.cancelGlossSweep);
 
   if (text === undefined) return <main className="p-8">Loading…</main>;
   if (text === null) return <main className="p-8">Text not found.</main>;
 
   const draftCount = sections?.filter((s) => s.status === "draft").length ?? 0;
   const unapprovedCount = sections?.filter((s) => s.status !== "approved").length ?? 0;
+  const approvedSections = sections?.filter((s) => s.status === "approved") ?? [];
+  const glossCheckedCount = approvedSections.filter((s) => s.glossCheckedAt).length;
 
   const handleApproveAll = async () => {
     if (draftCount === 0) return;
@@ -37,8 +41,16 @@ export default function AdminTextPage() {
     await publish({ textId: text._id });
   };
 
+  const handleSweepGlosses = async () => {
+    if (text.glossSweepActive) {
+      await cancelGlossSweep({ textId: text._id });
+    } else {
+      await startGlossSweep({ textId: text._id });
+    }
+  };
+
   return (
-    <main className="mx-auto max-w-5xl p-8">
+    <main className="mx-auto max-w-5xl p-8 min-w-3/4">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -71,6 +83,26 @@ export default function AdminTextPage() {
             className="rounded bg-green-700 px-3 py-1.5 text-sm text-white disabled:opacity-40"
           >
             Approve All ({draftCount})
+          </button>
+          <button
+            onClick={handleSweepGlosses}
+            disabled={
+              !text.glossSweepActive &&
+              (approvedSections.length === 0 || glossCheckedCount === approvedSections.length)
+            }
+            title={
+              text.glossSweepActive
+                ? "Stop the sweep after its current batch finishes"
+                : "Scans every approved section that hasn't been checked yet and suggests glosses for the ones that need them"
+            }
+            className={`rounded border px-3 py-1.5 text-sm disabled:opacity-40 ${
+              text.glossSweepActive
+                ? "border-amber-400 bg-amber-100 text-amber-800"
+                : "border-border"
+            }`}
+          >
+            {text.glossSweepActive ? "Cancel Sweep" : "Sweep for Glosses"} ({glossCheckedCount}/
+            {approvedSections.length})
           </button>
           <button
             onClick={handlePublish}
