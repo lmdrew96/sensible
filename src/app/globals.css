@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;
@@ -8,8 +9,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-aliquam);
+  --font-mono: var(--font-monofont);
+  --font-header: var(--font-fredericka);
+  --font-reader-serif: var(--font-typewriter);
+  --font-reader-sans: var(--font-avenir);
+  --font-reader-mono: var(--font-brassmono);
+  --font-reader-dyslexic-a: var(--font-cadman);
+  --font-reader-dyslexic-b: var(--font-opendyslexic);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,8 +26,32 @@
   }
 }
 
+:root {
+  --font-reader-active: var(--font-typewriter);
+}
+
+html[data-reader-font="sans"] {
+  --font-reader-active: var(--font-avenir);
+}
+
+html[data-reader-font="mono"] {
+  --font-reader-active: var(--font-brassmono);
+}
+
+html[data-reader-font="dyslexic-a"] {
+  --font-reader-active: var(--font-cadman);
+}
+
+html[data-reader-font="dyslexic-b"] {
+  --font-reader-active: var(--font-opendyslexic);
+}
+
+.reader-text {
+  font-family: var(--font-reader-active);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, ui-sans-serif;
 }

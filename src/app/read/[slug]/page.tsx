@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
+import { Markdown, withSpeaker } from "@/components/Markdown";
 
 export default function ReaderPage() {
   const params = useParams<{ slug: string }>();
@@ -21,7 +22,7 @@ export default function ReaderPage() {
   return (
     <main className="mx-auto max-w-5xl p-8">
       <header className="mb-8 border-b border-neutral-200 pb-6">
-        <h1 className="text-3xl font-semibold">{text.title}</h1>
+        <h1 className="font-header text-3xl font-semibold">{text.title}</h1>
         <p className="mt-1 text-neutral-500">
           {text.author}, {text.year}
         </p>
@@ -50,19 +51,19 @@ export default function ReaderPage() {
         </div>
       )}
 
-      <div>
+      <div className="reader-text">
         {sections?.map((section) =>
           singleSide ? (
-            <p key={section._id} className="border-b border-neutral-100 py-4 leading-relaxed">
-              {section.modernized}
-            </p>
+            <Markdown key={section._id} className="border-b border-neutral-100 py-4">
+              {withSpeaker(section.modernized ?? "", section.speaker)}
+            </Markdown>
           ) : (
             <div
               key={section._id}
               className="grid grid-cols-2 gap-x-8 border-b border-neutral-100 py-4"
             >
-              <p className="leading-relaxed text-neutral-600">{section.original}</p>
-              <p className="leading-relaxed">{section.modernized}</p>
+              <Markdown>{withSpeaker(section.original, section.speaker)}</Markdown>
+              <Markdown>{withSpeaker(section.modernized ?? "", section.speaker)}</Markdown>
             </div>
           ),
         )}
