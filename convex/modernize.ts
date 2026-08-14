@@ -28,7 +28,9 @@ export const generateDraft = action({
 
 ${DIFFICULTY_GUIDANCE[text.difficultyType]}
 
-This passage is from "${text.title}" by ${text.author} (${text.year}). Output only the modernized passage, with no preamble, no commentary, and no markdown formatting.
+This passage is from "${text.title}" by ${text.author} (${text.year}). Output only the modernized passage, with no preamble and no commentary.
+
+You may use exactly three formatting marks, only where the original's own emphasis or structure calls for them: **double asterisks** for words the original stresses, *single asterisks* for a lighter emphasis or a foreign/title phrase, and a leading "# " on a passage that is itself a standalone heading or label (e.g. a chapter title, not a full sentence). Use these sparingly and only to carry over emphasis or structure that is actually present in the original — never to add emphasis of your own. Do not use any other markdown: no links, lists, tables, code, or nested/multiple headings.
 
 The passage given to you is the complete, intentional unit to modernize — even when it's just a single word, a name, a short exclamation, or a brief stage direction. Modernize only that text. Never continue past it: no inventing dialogue, no adding characters, no extending into a scene that wasn't given. If the passage is already in modern English, output it unchanged rather than commenting on it.`;
 

@@ -1,9 +1,10 @@
 "use client";
 
-import { ReactNode, useRef, useState } from "react";
+import { Fragment, ReactNode, useMemo, useRef, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Doc, Id } from "@convex/_generated/dataModel";
+import { parseDelimited, type FormatRange } from "@/lib/richText";
 
 // Character offset of (node, offset) relative to the start of container's
 // text content -- works regardless of how many child spans sit in between,
@@ -13,6 +14,48 @@ function offsetWithinContainer(container: Node, node: Node, offset: number): num
   range.selectNodeContents(container);
   range.setEnd(node, offset);
   return range.toString().length;
+}
+
+type Highlight = Doc<"highlights">;
+
+// Merges format ranges (bold/italic/heading, from the modernization) and
+// highlight ranges (per-reader, from the highlights table) into a flat,
+// non-overlapping list of styled segments -- the same technique a rich
+// text editor uses to render style runs over plain text.
+function buildSegments(length: number, formatRanges: FormatRange[], highlights: Highlight[]) {
+  const points = new Set<number>([0, length]);
+  for (const r of formatRanges) {
+    points.add(r.start);
+    points.add(r.end);
+  }
+  for (const h of highlights) {
+    points.add(h.startOffset);
+    points.add(h.endOffset);
+  }
+  const sorted = [...points].sort((a, b) => a - b);
+
+  const segments: {
+    start: number;
+    end: number;
+    bold: boolean;
+    italic: boolean;
+    heading: boolean;
+    highlight: Highlight | undefined;
+  }[] = [];
+  for (let i = 0; i < sorted.length - 1; i++) {
+    const start = sorted[i];
+    const end = sorted[i + 1];
+    if (start >= end) continue;
+    segments.push({
+      start,
+      end,
+      bold: formatRanges.some((r) => r.type === "bold" && r.start <= start && r.end >= end),
+      italic: formatRanges.some((r) => r.type === "italic" && r.start <= start && r.end >= end),
+      heading: formatRanges.some((r) => r.type === "heading" && r.start <= start && r.end >= end),
+      highlight: highlights.find((h) => h.startOffset <= start && h.endOffset >= end),
+    });
+  }
+  return segments;
 }
 
 export function HighlightableText({
@@ -29,13 +72,22 @@ export function HighlightableText({
   className?: string;
 }) {
   const { isAuthenticated } = useConvexAuth();
-  const highlights = useQuery(api.highlights.listForSection, { sectionId, side });
+  const highlightsResult = useQuery(api.highlights.listForSection, { sectionId, side });
+  const highlights = useMemo(() => highlightsResult ?? [], [highlightsResult]);
   const createHighlight = useMutation(api.highlights.create);
   const setNote = useMutation(api.highlights.setNote);
   const removeHighlight = useMutation(api.highlights.remove);
 
+  // Original text is verbatim historical source -- never reinterpret stray
+  // asterisks/pound signs as formatting. Only the LLM-authored modernized
+  // side uses the bold/italic/heading subset.
+  const { plain, ranges } = useMemo(
+    () => (side === "modernized" ? parseDelimited(text) : { plain: text, ranges: [] }),
+    [text, side],
+  );
+
   const containerRef = useRef<HTMLSpanElement>(null);
-  const [activeHighlight, setActiveHighlight] = useState<Doc<"highlights"> | null>(null);
+  const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [signInHint, setSignInHint] = useState(false);
 
@@ -62,10 +114,10 @@ export function HighlightableText({
     selection.removeAllRanges();
     if (end <= start) return;
 
-    void createHighlight({ sectionId, side, startOffset: start, endOffset: end, text: text.slice(start, end) });
+    void createHighlight({ sectionId, side, startOffset: start, endOffset: end, text: plain.slice(start, end) });
   };
 
-  const openNoteEditor = (highlight: Doc<"highlights">) => {
+  const openNoteEditor = (highlight: Highlight) => {
     setActiveHighlight(highlight);
     setNoteDraft(highlight.note ?? "");
   };
@@ -82,31 +134,32 @@ export function HighlightableText({
     setActiveHighlight(null);
   };
 
-  const pieces: ReactNode[] = [];
-  const sorted = [...(highlights ?? [])].sort((a, b) => a.startOffset - b.startOffset);
-  let cursor = 0;
-  for (const h of sorted) {
-    if (h.startOffset < cursor) continue; // skip overlapping highlight, first one wins
-    if (h.startOffset > cursor) pieces.push(text.slice(cursor, h.startOffset));
-    pieces.push(
-      <mark
-        key={h._id}
-        onClick={() => openNoteEditor(h)}
-        className={`cursor-pointer rounded-sm bg-accent/30 ${h.note ? "underline decoration-accent decoration-2" : ""}`}
-        title={h.note || "Click to annotate"}
-      >
-        {text.slice(h.startOffset, h.endOffset)}
-      </mark>,
-    );
-    cursor = h.endOffset;
-  }
-  if (cursor < text.length) pieces.push(text.slice(cursor));
+  const segments = buildSegments(plain.length, ranges, highlights);
+  const rendered: ReactNode = segments.map((seg) => {
+    let node: ReactNode = plain.slice(seg.start, seg.end);
+    if (seg.bold) node = <strong>{node}</strong>;
+    if (seg.italic) node = <em>{node}</em>;
+    if (seg.heading) node = <span className="text-lg font-semibold">{node}</span>;
+    if (seg.highlight) {
+      const h = seg.highlight;
+      node = (
+        <mark
+          onClick={() => openNoteEditor(h)}
+          className={`cursor-pointer rounded-sm bg-accent/30 ${h.note ? "underline decoration-accent decoration-2" : ""}`}
+          title={h.note || "Click to annotate"}
+        >
+          {node}
+        </mark>
+      );
+    }
+    return <Fragment key={`${seg.start}-${seg.end}`}>{node}</Fragment>;
+  });
 
   return (
     <div className={className}>
       <p onMouseUp={handleMouseUp}>
         {speaker && <strong>{speaker}: </strong>}
-        <span ref={containerRef}>{pieces}</span>
+        <span ref={containerRef}>{rendered}</span>
       </p>
       {signInHint && (
         <p className="mt-1 text-xs text-muted-foreground">Sign in to highlight and annotate.</p>
