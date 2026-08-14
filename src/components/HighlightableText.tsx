@@ -39,7 +39,7 @@ function buildSegments(length: number, formatRanges: FormatRange[], highlights: 
     end: number;
     bold: boolean;
     italic: boolean;
-    heading: boolean;
+    headingLevel: 1 | 2 | 3 | undefined;
     highlight: Highlight | undefined;
   }[] = [];
   for (let i = 0; i < sorted.length - 1; i++) {
@@ -51,12 +51,19 @@ function buildSegments(length: number, formatRanges: FormatRange[], highlights: 
       end,
       bold: formatRanges.some((r) => r.type === "bold" && r.start <= start && r.end >= end),
       italic: formatRanges.some((r) => r.type === "italic" && r.start <= start && r.end >= end),
-      heading: formatRanges.some((r) => r.type === "heading" && r.start <= start && r.end >= end),
+      headingLevel: formatRanges.find((r) => r.type === "heading" && r.start <= start && r.end >= end)
+        ?.level,
       highlight: highlights.find((h) => h.startOffset <= start && h.endOffset >= end),
     });
   }
   return segments;
 }
+
+const HEADING_SIZE: Record<1 | 2 | 3, string> = {
+  1: "text-2xl font-bold",
+  2: "text-xl font-semibold",
+  3: "text-lg font-semibold",
+};
 
 export function HighlightableText({
   sectionId,
@@ -139,7 +146,7 @@ export function HighlightableText({
     let node: ReactNode = plain.slice(seg.start, seg.end);
     if (seg.bold) node = <strong>{node}</strong>;
     if (seg.italic) node = <em>{node}</em>;
-    if (seg.heading) node = <span className="text-lg font-semibold">{node}</span>;
+    if (seg.headingLevel) node = <span className={HEADING_SIZE[seg.headingLevel]}>{node}</span>;
     if (seg.highlight) {
       const h = seg.highlight;
       node = (
@@ -157,7 +164,7 @@ export function HighlightableText({
 
   return (
     <div className={className}>
-      <p onMouseUp={handleMouseUp}>
+      <p onMouseUp={handleMouseUp} className="whitespace-pre-line">
         {speaker && <strong>{speaker}: </strong>}
         <span ref={containerRef}>{rendered}</span>
       </p>
