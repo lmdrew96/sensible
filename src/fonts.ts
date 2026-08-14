@@ -7,14 +7,14 @@ export const fontFredericka = localFont({
   display: "swap",
 });
 
-export const fontAliquam = localFont({
+export const fontElgethyEst = localFont({
   src: [
-    { path: "../assets/fonts/Aliquam-nX00.ttf", weight: "400", style: "normal" },
-    { path: "../assets/fonts/AliquamItalic-1ZOB.ttf", weight: "400", style: "italic" },
-    { path: "../assets/fonts/AliquamUltralight-RdO6.ttf", weight: "200", style: "normal" },
-    { path: "../assets/fonts/AliquamUltralightItalic-BYv8.ttf", weight: "200", style: "italic" },
+    { path: "../assets/fonts/ElgethyEst-vAR9.ttf", weight: "400", style: "normal" },
+    { path: "../assets/fonts/ElgethyEstOblique-og1x.ttf", weight: "400", style: "italic" },
+    { path: "../assets/fonts/ElgethyEstBold-L8O3.ttf", weight: "700", style: "normal" },
+    { path: "../assets/fonts/ElgethyEstBoldOblique-eepp.ttf", weight: "700", style: "italic" },
   ],
-  variable: "--font-aliquam",
+  variable: "--font-elgethyest",
   display: "swap",
 });
 
@@ -80,7 +80,7 @@ export const fontOpendyslexic = localFont({
 
 export const allFontVariables = [
   fontFredericka.variable,
-  fontAliquam.variable,
+  fontElgethyEst.variable,
   fontMonoApp.variable,
   fontTypewriter.variable,
   fontAvenir.variable,
