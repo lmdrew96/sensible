@@ -85,7 +85,7 @@ html[data-theme="indigo"][data-mode="dark"] {
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --font-sans: var(--font-elgethyest);
+  --font-sans: var(--font-montserrat);
   --font-mono: var(--font-monofont);
   --font-header: var(--font-fredericka);
   --font-reader-serif: var(--font-typewriter);

@@ -2,7 +2,7 @@
 ### All referenced fonts can be found in the `assets/fonts` folder.
 
 - `FrederickatheGreat-Regular.ttf`— app header font
-- `ElgethyEst*.ttf` — app body font
+- `MontserratRegular/Italic/Bold/BoldItalic*.otf` — app body font
 - `Mono*.ttf` — app mono font
 - `AmericanTypewriter.ttc` — /reader serif font
 - `BrassMono*.ttf` — /reader mono font

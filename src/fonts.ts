@@ -7,14 +7,14 @@ export const fontFredericka = localFont({
   display: "swap",
 });
 
-export const fontElgethyEst = localFont({
+export const fontMontserrat = localFont({
   src: [
-    { path: "../assets/fonts/ElgethyEst-vAR9.ttf", weight: "400", style: "normal" },
-    { path: "../assets/fonts/ElgethyEstOblique-og1x.ttf", weight: "400", style: "italic" },
-    { path: "../assets/fonts/ElgethyEstBold-L8O3.ttf", weight: "700", style: "normal" },
-    { path: "../assets/fonts/ElgethyEstBoldOblique-eepp.ttf", weight: "700", style: "italic" },
+    { path: "../assets/fonts/MontserratRegular-RpK6l.otf", weight: "400", style: "normal" },
+    { path: "../assets/fonts/MontserratItalic-5187x.otf", weight: "400", style: "italic" },
+    { path: "../assets/fonts/MontserratBold-p781R.otf", weight: "700", style: "normal" },
+    { path: "../assets/fonts/MontserratBoldItalic-ALPax.otf", weight: "700", style: "italic" },
   ],
-  variable: "--font-elgethyest",
+  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -80,7 +80,7 @@ export const fontOpendyslexic = localFont({
 
 export const allFontVariables = [
   fontFredericka.variable,
-  fontElgethyEst.variable,
+  fontMontserrat.variable,
   fontMonoApp.variable,
   fontTypewriter.variable,
   fontAvenir.variable,
