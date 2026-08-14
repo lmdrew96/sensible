@@ -41,6 +41,13 @@ yarn-error.log*
 # IDE
 .idea
 
+# auto-installed Convex agent-skill scaffolding (regenerate with
+# `npx convex ai-files install`)
+/.agents/
+/.claude/skills/
+/convex/_generated/ai/
+/skills-lock.json
+
 # vercel
 .vercel
 
