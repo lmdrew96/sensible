@@ -63,3 +63,17 @@ export const publish = mutation({
     await ctx.db.patch(textId, { status: "published" });
   },
 });
+
+export const remove = mutation({
+  args: { textId: v.id("texts") },
+  handler: async (ctx, { textId }) => {
+    const sections = await ctx.db
+      .query("sections")
+      .withIndex("by_text", (q) => q.eq("textId", textId))
+      .collect();
+    for (const section of sections) {
+      await ctx.db.delete(section._id);
+    }
+    await ctx.db.delete(textId);
+  },
+});

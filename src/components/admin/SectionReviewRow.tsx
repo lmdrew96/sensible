@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Doc } from "@convex/_generated/dataModel";
+import { Markdown, withSpeaker } from "@/components/Markdown";
 
 const STATUS_STYLES: Record<Doc<"sections">["status"], string> = {
   approved: "bg-green-100 text-green-800",
@@ -60,10 +61,12 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="mb-1 text-xs text-neutral-500">Original</p>
-          <p className="text-sm whitespace-pre-wrap">{section.original}</p>
+          <Markdown className="prose-sm">{withSpeaker(section.original, section.speaker)}</Markdown>
         </div>
         <div>
-          <p className="mb-1 text-xs text-neutral-500">Modernized</p>
+          <p className="mb-1 text-xs text-neutral-500">
+            Modernized{section.speaker ? ` — ${section.speaker}` : ""}
+          </p>
           <textarea
             className="h-full min-h-32 w-full rounded border border-neutral-300 p-2 text-sm"
             value={draft}

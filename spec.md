@@ -23,7 +23,7 @@ Most tools simplify vocabulary and flatten tone in the process. Sensible explici
     → Sections (paragraph-aligned)
         → { original, modernized, gloss? }
   ```
-- Texts sourced from Project Gutenberg (all public domain).
+- Texts sourced from public domain editions: Standard Ebooks where a clean edition exists, the National Archives for founding documents (Declaration, Constitution, Bill of Rights), Wikisource for Common Sense, and Project Gutenberg only where no cleaner structured source exists (The Metamorphosis).
 
 ## Difficulty types (informs modernization prompts)
 Not all "hard to read" is the same kind of hard — the AI prompt used for generating Side B should account for which type a text is:

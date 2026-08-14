@@ -1,6 +1,15 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+// Safety net against agent-authored preamble ("Here's the modernized
+// version:") leaking into stored content -- this must never reach readers.
+const PREAMBLE_PATTERN =
+  /^(?:sure[,!]?\s*)?(?:here(?:'s| is)|this is)\s+(?:the\s+)?modernized[^\n]*:\s*\n+/i;
+
+function stripPreamble(text: string): string {
+  return text.replace(PREAMBLE_PATTERN, "").trim();
+}
+
 export const get = query({
   args: { sectionId: v.id("sections") },
   handler: async (ctx, { sectionId }) => {
@@ -37,6 +46,7 @@ export const create = mutation({
     textId: v.id("texts"),
     order: v.number(),
     original: v.string(),
+    speaker: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("sections", { ...args, status: "pending" });
@@ -50,7 +60,11 @@ export const saveDraft = mutation({
     gloss: v.optional(v.string()),
   },
   handler: async (ctx, { sectionId, modernized, gloss }) => {
-    await ctx.db.patch(sectionId, { modernized, gloss, status: "draft" });
+    await ctx.db.patch(sectionId, {
+      modernized: stripPreamble(modernized),
+      gloss,
+      status: "draft",
+    });
   },
 });
 

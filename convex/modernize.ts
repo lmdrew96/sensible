@@ -28,12 +28,15 @@ export const generateDraft = action({
 
 ${DIFFICULTY_GUIDANCE[text.difficultyType]}
 
-This passage is from "${text.title}" by ${text.author} (${text.year}). Output only the modernized passage, with no preamble and no markdown formatting.`;
+This passage is from "${text.title}" by ${text.author} (${text.year}). Output only the modernized passage, with no preamble, no commentary, and no markdown formatting.
+
+The passage given to you is the complete, intentional unit to modernize — even when it's just a single word, a name, a short exclamation, or a brief stage direction. Modernize only that text. Never continue past it: no inventing dialogue, no adding characters, no extending into a scene that wasn't given. If the passage is already in modern English, output it unchanged rather than commenting on it.`;
 
     const response = await anthropic.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 8192,
       system,
+      output_config: { effort: "medium" },
       messages: [{ role: "user", content: section.original }],
     });
 
