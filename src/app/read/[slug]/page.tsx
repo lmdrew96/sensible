@@ -45,7 +45,7 @@ export default function ReaderPage() {
       )}
 
       {!singleSide && (
-        <div className="grid grid-cols-2 gap-x-8 border-b border-border pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="hidden gap-x-8 border-b border-border pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid sm:grid-cols-2">
           <span>Original</span>
           <span>Modernized</span>
         </div>
@@ -65,20 +65,30 @@ export default function ReaderPage() {
           ) : (
             <div
               key={section._id}
-              className="grid grid-cols-2 gap-x-8 border-b border-border py-4"
+              className="grid grid-cols-1 gap-y-4 border-b border-border py-4 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0"
             >
-              <HighlightableText
-                sectionId={section._id}
-                side="original"
-                text={section.original}
-                speaker={section.speaker}
-              />
-              <HighlightableText
-                sectionId={section._id}
-                side="modernized"
-                text={section.modernized ?? ""}
-                speaker={section.speaker}
-              />
+              <div>
+                <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+                  Original
+                </p>
+                <HighlightableText
+                  sectionId={section._id}
+                  side="original"
+                  text={section.original}
+                  speaker={section.speaker}
+                />
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+                  Modernized
+                </p>
+                <HighlightableText
+                  sectionId={section._id}
+                  side="modernized"
+                  text={section.modernized ?? ""}
+                  speaker={section.speaker}
+                />
+              </div>
             </div>
           ),
         )}

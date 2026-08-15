@@ -45,13 +45,23 @@ export default function Home() {
       </div>
 
       <div className="mt-14 w-full max-w-3xl">
-        <div className="grid grid-cols-2 gap-x-8 border-b border-border pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <div className="hidden gap-x-8 border-b border-border pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid sm:grid-cols-2">
           <span>Original — 1776</span>
           <span>Modernized</span>
         </div>
-        <div className="grid grid-cols-2 gap-x-8 py-4 text-sm">
-          <p>{DEMO_ORIGINAL}</p>
-          <p>{DEMO_MODERNIZED}</p>
+        <div className="grid grid-cols-1 gap-y-4 py-4 text-sm sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0">
+          <div>
+            <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+              Original — 1776
+            </p>
+            <p>{DEMO_ORIGINAL}</p>
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+              Modernized
+            </p>
+            <p>{DEMO_MODERNIZED}</p>
+          </div>
         </div>
       </div>
 
