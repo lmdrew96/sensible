@@ -115,8 +115,21 @@ html[data-reader-font="dyslexic-b"] {
   --font-reader-active: var(--font-opendyslexic);
 }
 
+:root {
+  --reader-font-size-active: 1.0625rem;
+}
+
+html[data-reader-size="small"] {
+  --reader-font-size-active: 0.9375rem;
+}
+
+html[data-reader-size="large"] {
+  --reader-font-size-active: 1.25rem;
+}
+
 .reader-text {
   font-family: var(--font-reader-active);
+  font-size: var(--reader-font-size-active);
 }
 
 body {

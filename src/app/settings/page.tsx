@@ -2,11 +2,14 @@
 
 import { useReaderFont } from "@/components/useReaderFont";
 import { READER_FONTS } from "@/lib/reader-font";
+import { useReaderSize } from "@/components/useReaderSize";
+import { READER_SIZES } from "@/lib/reader-size";
 import { useTheme } from "@/components/useTheme";
 import { THEMES } from "@/lib/theme";
 
 export default function SettingsPage() {
   const { font, setFont } = useReaderFont();
+  const { size, setSize } = useReaderSize();
   const { theme, setTheme } = useTheme();
 
   return (
@@ -82,6 +85,40 @@ export default function SettingsPage() {
               <span className="text-sm" style={{ fontFamily: `var(${option.cssVar})` }}>
                 The quick brown fox
               </span>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+          Text size
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose the text size used for text in the reader.
+        </p>
+
+        <div className="mt-4 space-y-2">
+          {READER_SIZES.map((option) => (
+            <label
+              key={option.value}
+              className={`flex cursor-pointer items-center justify-between rounded border p-3 ${
+                size === option.value
+                  ? "border-foreground"
+                  : "border-border hover:border-foreground/50"
+              }`}
+            >
+              <div className="flex w-50 shrink-0 items-center gap-2">
+                <input
+                  type="radio"
+                  name="reader-size"
+                  value={option.value}
+                  checked={size === option.value}
+                  onChange={() => setSize(option.value)}
+                />
+                <span className="text-sm font-medium">{option.label}</span>
+              </div>
+              <span style={{ fontSize: option.fontSize }}>The quick brown fox</span>
             </label>
           ))}
         </div>
