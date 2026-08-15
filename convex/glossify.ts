@@ -2,6 +2,7 @@
 
 import { v } from "convex/values";
 import Anthropic from "@anthropic-ai/sdk";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { action, internalAction, ActionCtx } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -9,6 +10,9 @@ import type { Id } from "./_generated/dataModel";
 const anthropic = new Anthropic();
 
 const MAX_SUGGESTIONS = 5;
+// A reader-selected phrase this long is almost certainly a whole sentence
+// or more, not a term worth glossing -- reject before spending an API call.
+const MAX_REQUEST_TERM_LENGTH = 150;
 // Sections processed per sweep step before rescheduling -- keeps each
 // action invocation well under Convex's execution time limit regardless of
 // how many sections a text has.
@@ -69,9 +73,15 @@ async function suggestGlossesForSection(ctx: ActionCtx, sectionId: Id<"sections"
   const text = await ctx.runQuery(api.texts.get, { textId: section.textId });
   if (!text) throw new Error("Text not found");
 
+  const existingTerms = await ctx.runQuery(api.glosses.listTermsForText, { textId: section.textId });
+  const existingTermsLower = new Set(existingTerms.map((t) => t.toLowerCase()));
+  const alreadyGlossedBlock = existingTerms.length
+    ? `\n\nThese terms have already been glossed elsewhere in this text -- don't suggest any of them again, even if they appear in this passage: ${existingTerms.join(", ")}`
+    : "";
+
   const system = `You help readers of "${text.title}" by ${text.author} (${text.year}) on the app Sensible. Sensible already modernizes archaic prose into plain English, but some words or phrases survive modernization on purpose -- proper nouns, historical or legal references, allusions, idioms, or terms with no good modern equivalent -- and can still leave a modern reader unsure what's meant.
 
-Given one already-modernized passage, find only the specific words or short phrases within it that a modern reader would likely still find unclear or want defined. Most passages need zero glosses -- only flag a term if a reader would genuinely have to stop and look it up. Return at most ${MAX_SUGGESTIONS} glosses; if the passage doesn't need any, return an empty list, and don't force one just to have something to return.
+Given one already-modernized passage, find only the specific words or short phrases within it that a modern reader would likely still find unclear or want defined. Most passages need zero glosses -- only flag a term if a reader would genuinely have to stop and look it up. Return at most ${MAX_SUGGESTIONS} glosses; if the passage doesn't need any, return an empty list, and don't force one just to have something to return.${alreadyGlossedBlock}
 
 Never gloss:
 - A section/article/chapter/amendment citation, like "Section 3.", "Article V.", or "Amendment XIV" -- even when discussing what that section covers, the citation label itself is never something to define. Example: given the passage "Section 4. This section covers the timing of congressional elections.", gloss nothing -- not even "Section 4." -- because a citation number isn't content.
@@ -108,6 +118,7 @@ For each gloss:
     if (!term || !explanation) continue;
     if (!plain.includes(term)) continue;
     if (seen.has(term)) continue;
+    if (existingTermsLower.has(term.toLowerCase())) continue;
     seen.add(term);
     suggestions.push({ term, explanation });
     if (suggestions.length >= MAX_SUGGESTIONS) break;
@@ -120,6 +131,79 @@ export const generateSuggestions = action({
   args: { sectionId: v.id("sections") },
   handler: async (ctx, { sectionId }): Promise<void> => {
     await suggestGlossesForSection(ctx, sectionId);
+  },
+});
+
+const REQUEST_GLOSS_SCHEMA = {
+  type: "object",
+  properties: {
+    explanation: { type: "string" },
+  },
+  required: ["explanation"],
+  additionalProperties: false,
+} as const;
+
+// Reader-triggered counterpart to suggestGlossesForSection: instead of
+// Haiku guessing what might be unclear, a signed-in reader has already
+// flagged a specific term or phrase they don't understand (by highlighting
+// it and clicking "What does this mean?" in HighlightableText). Explains it
+// directly rather than filtering it the way the sweep prompt does -- if a
+// reader asked, they get an answer, not a second-guess.
+export const requestGloss = action({
+  args: { sectionId: v.id("sections"), term: v.string() },
+  handler: async (ctx, { sectionId, term }): Promise<{ term: string; explanation: string }> => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Must be signed in to ask about a term");
+
+    const trimmed = term.trim();
+    if (!trimmed) throw new Error("Select some text first");
+    if (trimmed.length > MAX_REQUEST_TERM_LENGTH) {
+      throw new Error("Select a shorter phrase -- just the term you don't understand");
+    }
+
+    const existing = await ctx.runQuery(internal.glosses.findByTerm, { sectionId, term: trimmed });
+    if (existing) {
+      await ctx.runMutation(internal.glosses.bumpRequestCount, { glossId: existing._id });
+      return { term: existing.term, explanation: existing.explanation };
+    }
+
+    const section = await ctx.runQuery(api.sections.get, { sectionId });
+    if (!section) throw new Error("Section not found");
+    if (!section.modernized) throw new Error("Section has no modernized draft yet");
+
+    const plain = stripFormatting(section.modernized);
+    if (!plain.includes(trimmed)) {
+      throw new Error("That text no longer matches the current passage");
+    }
+
+    const text = await ctx.runQuery(api.texts.get, { textId: section.textId });
+    if (!text) throw new Error("Text not found");
+
+    const system = `You help readers of "${text.title}" by ${text.author} (${text.year}) on the app Sensible. A reader is looking at an already-modernized passage and has selected a specific word or phrase they don't understand, within the full passage for context.
+
+Explain what the selected phrase means, in one or two short, plain-English sentences a reader can glance at without leaving the page. Answer directly -- the reader already decided this is worth asking about, so don't judge whether it "should" need explaining.`;
+
+    const message = await anthropic.messages.parse({
+      model: "claude-haiku-4-5",
+      max_tokens: 512,
+      system,
+      output_config: {
+        format: { type: "json_schema", schema: REQUEST_GLOSS_SCHEMA },
+      },
+      messages: [
+        {
+          role: "user",
+          content: `Passage:\n\n${section.modernized}\n\nSelected phrase: "${trimmed}"`,
+        },
+      ],
+    });
+
+    const parsed = message.parsed_output as { explanation: string } | null;
+    const explanation = parsed?.explanation.trim();
+    if (!explanation) throw new Error("Couldn't come up with an explanation -- try again");
+
+    await ctx.runMutation(internal.glosses.createFromRequest, { sectionId, term: trimmed, explanation });
+    return { term: trimmed, explanation };
   },
 });
 

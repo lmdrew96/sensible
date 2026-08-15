@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, ReactNode, useMemo, useRef, useState } from "react";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Doc, Id } from "@convex/_generated/dataModel";
 import { parseDelimited, type FormatRange } from "@/lib/richText";
@@ -117,6 +117,7 @@ export function HighlightableText({
   const createHighlight = useMutation(api.highlights.create);
   const setNote = useMutation(api.highlights.setNote);
   const removeHighlight = useMutation(api.highlights.remove);
+  const requestGloss = useAction(api.glossify.requestGloss);
 
   // Glosses are authored against the modernized text -- the original side
   // never shows them.
@@ -139,6 +140,8 @@ export function HighlightableText({
   const [activeHighlight, setActiveHighlight] = useState<Highlight | null>(null);
   const [noteDraft, setNoteDraft] = useState("");
   const [signInHint, setSignInHint] = useState(false);
+  const [requestedGloss, setRequestedGloss] = useState<{ term: string; explanation: string } | null>(null);
+  const [glossRequestState, setGlossRequestState] = useState<"idle" | "loading" | "error">("idle");
 
   const handleMouseUp = () => {
     const selection = window.getSelection();
@@ -169,6 +172,8 @@ export function HighlightableText({
   const openNoteEditor = (highlight: Highlight) => {
     setActiveHighlight(highlight);
     setNoteDraft(highlight.note ?? "");
+    setRequestedGloss(null);
+    setGlossRequestState("idle");
   };
 
   const handleSaveNote = async () => {
@@ -181,6 +186,19 @@ export function HighlightableText({
     if (!activeHighlight) return;
     await removeHighlight({ highlightId: activeHighlight._id });
     setActiveHighlight(null);
+  };
+
+  const handleWhatDoesThisMean = async () => {
+    if (!activeHighlight) return;
+    setGlossRequestState("loading");
+    setRequestedGloss(null);
+    try {
+      const result = await requestGloss({ sectionId, term: activeHighlight.text });
+      setRequestedGloss(result);
+      setGlossRequestState("idle");
+    } catch {
+      setGlossRequestState("error");
+    }
   };
 
   const glossRanges = useMemo(() => findGlossRanges(plain, glosses), [plain, glosses]);
@@ -264,6 +282,15 @@ export function HighlightableText({
             >
               Remove highlight
             </button>
+            {side === "modernized" && (
+              <button
+                onClick={handleWhatDoesThisMean}
+                disabled={glossRequestState === "loading"}
+                className="rounded border border-border px-3 py-1 text-xs hover:bg-muted disabled:opacity-50"
+              >
+                {glossRequestState === "loading" ? "Asking…" : "What does this mean?"}
+              </button>
+            )}
             <button
               onClick={() => setActiveHighlight(null)}
               className="ml-auto text-xs text-muted-foreground hover:underline"
@@ -271,6 +298,15 @@ export function HighlightableText({
               Close
             </button>
           </div>
+          {glossRequestState === "error" && (
+            <p className="mt-2 text-xs text-red-700">Couldn&apos;t get an explanation -- try again.</p>
+          )}
+          {requestedGloss && (
+            <div className="mt-2 rounded border border-border bg-background p-2 text-sm">
+              <p className="font-medium">{requestedGloss.term}</p>
+              <p className="mt-1 text-muted-foreground">{requestedGloss.explanation}</p>
+            </div>
+          )}
         </div>
       )}
     </div>

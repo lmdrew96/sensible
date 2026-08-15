@@ -45,7 +45,11 @@ export default defineSchema({
     term: v.string(),
     explanation: v.string(),
     status: v.union(v.literal("suggested"), v.literal("approved")),
-  }).index("by_section", ["sectionId"]),
+    source: v.optional(v.union(v.literal("ai_sweep"), v.literal("reader_request"))),
+    requestCount: v.optional(v.number()),
+  })
+    .index("by_section", ["sectionId"])
+    .index("by_section_and_term", ["sectionId", "term"]),
 
   highlights: defineTable({
     sectionId: v.id("sections"),

@@ -40,7 +40,7 @@ export function NavBar() {
         <Link href="/" className="font-header text-3xl">
           Sensible
         </Link>
-        <div className="flex items-center gap-6 text-sm">
+        <div className="flex items-center gap-4 text-sm">
           <Link href="/read" className="hover:underline">
             Library
           </Link>

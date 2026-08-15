@@ -29,7 +29,10 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   const approve = useMutation(api.sections.approve);
   const remove = useMutation(api.sections.remove);
 
-  const glosses = useQuery(api.glosses.listForSection, { sectionId: section._id }) ?? [];
+  const glossesResult = useQuery(api.glosses.listForSection, { sectionId: section._id }) ?? [];
+  // Highest-demand suggestions first, so reader-requested terms with several
+  // asks surface above one-off AI-swept guesses.
+  const glosses = [...glossesResult].sort((a, b) => (b.requestCount ?? 0) - (a.requestCount ?? 0));
   const generateGlossSuggestions = useAction(api.glossify.generateSuggestions);
   const approveGloss = useMutation(api.glosses.approve);
   const removeGloss = useMutation(api.glosses.remove);
@@ -159,6 +162,11 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
                 >
                   {gloss.status}
                 </span>
+                {gloss.source === "reader_request" && (
+                  <span className="mr-2 rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800">
+                    from a reader{gloss.requestCount && gloss.requestCount > 1 ? ` — asked ${gloss.requestCount}×` : ""}
+                  </span>
+                )}
                 <span className="font-medium">{gloss.term}</span>
                 <span className="text-muted-foreground"> — {gloss.explanation}</span>
               </div>
