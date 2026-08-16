@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center p-8">
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="font-header text-6xl font-semibold text-accent">Sensible</h1>
+        <h1 className="font-header text-6xl text-accent">Sensible</h1>
         <p className="mt-3 text-lg text-muted-foreground">
           Old writings, put in common language so they make sense.
         </p>
