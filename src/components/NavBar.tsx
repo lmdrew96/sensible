@@ -53,27 +53,32 @@ export function NavBar() {
     <button
       onClick={toggleMode}
       aria-label={mode === "light" ? "Switch to dark mode" : "Switch to light mode"}
-      className="flex items-center justify-center rounded p-1.5 hover:bg-muted"
+      className="flex items-center justify-center rounded-full p-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
     >
       {mode === "light" ? <MoonIcon /> : <SunIcon />}
     </button>
   );
 
   return (
-    <header className="border-b border-border">
-      <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-        <Link href="/" className="font-header text-3xl">
+    <header
+      className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur"
+      style={{
+        boxShadow: "0 1px 0 color-mix(in srgb, var(--border) 45%, transparent), 0 4px 16px -8px color-mix(in srgb, var(--border) 55%, transparent)",
+      }}
+    >
+      <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
+        <Link href="/" className="font-header text-3xl tracking-wide text-accent">
           Sensible
         </Link>
 
-        <div className="hidden items-center gap-4 text-sm sm:flex">
-          <Link href="/read" className="hover:underline">
+        <div className="hidden items-center gap-5 text-sm sm:flex">
+          <Link href="/read" className="hover:text-accent">
             Library
           </Link>
-          <Link href="/settings" className="hover:underline">
+          <Link href="/settings" className="hover:text-accent">
             Settings
           </Link>
-          <Link href="/admin" className="text-muted-foreground hover:underline">
+          <Link href="/admin" className="text-muted-foreground hover:text-accent">
             Admin
           </Link>
           <AccountStatus />
@@ -86,7 +91,7 @@ export function NavBar() {
             onClick={() => setMenuOpen((v) => !v)}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
-            className="flex items-center justify-center rounded p-1.5 hover:bg-muted"
+            className="flex items-center justify-center rounded-full p-2 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
           >
             <MenuIcon />
           </button>
@@ -94,16 +99,16 @@ export function NavBar() {
       </nav>
 
       {menuOpen && (
-        <div className="flex flex-col items-start gap-3 border-t border-border px-6 py-4 text-sm sm:hidden">
-          <Link href="/read" className="hover:underline" onClick={() => setMenuOpen(false)}>
+        <div className="flex flex-col items-start gap-3 border-t border-border/60 px-6 py-4 text-sm sm:hidden">
+          <Link href="/read" className="hover:text-accent" onClick={() => setMenuOpen(false)}>
             Library
           </Link>
-          <Link href="/settings" className="hover:underline" onClick={() => setMenuOpen(false)}>
+          <Link href="/settings" className="hover:text-accent" onClick={() => setMenuOpen(false)}>
             Settings
           </Link>
           <Link
             href="/admin"
-            className="text-muted-foreground hover:underline"
+            className="text-muted-foreground hover:text-accent"
             onClick={() => setMenuOpen(false)}
           >
             Admin

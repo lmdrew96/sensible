@@ -57,82 +57,78 @@ export default function LoginPage() {
   if (awaitingCode) {
     return (
       <main className="mx-auto max-w-sm p-8">
-        <h1 className="font-header text-3xl font-semibold">Check your email</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          We sent a 6-digit code to {email}. Enter it below to confirm your account.
-        </p>
-        <form onSubmit={handleVerify} className="mt-6 space-y-4">
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="123456"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            required
-            className="w-full rounded border border-border p-2 text-center text-lg tracking-widest"
-          />
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded bg-accent px-4 py-2 text-sm text-accent-foreground disabled:opacity-50"
-          >
-            {submitting ? "Confirming…" : "Confirm"}
-          </button>
-        </form>
+        <div className="panel p-6">
+          <h1 className="font-header text-3xl font-semibold text-accent">Check your email</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            We sent a 6-digit code to {email}. Enter it below to confirm your account.
+          </p>
+          <form onSubmit={handleVerify} className="mt-6 space-y-4">
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="123456"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+              className="w-full rounded-md border border-border bg-background p-2 text-center text-lg tracking-widest outline-none focus:border-accent"
+            />
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <button type="submit" disabled={submitting} className="btn-primary w-full">
+              {submitting ? "Confirming…" : "Confirm"}
+            </button>
+          </form>
+        </div>
       </main>
     );
   }
 
   return (
     <main className="mx-auto max-w-sm p-8">
-      <h1 className="font-header text-3xl font-semibold">
-        {mode === "signIn" ? "Sign in" : "Create an account"}
-      </h1>
+      <div className="panel p-6">
+        <h1 className="font-header text-3xl font-semibold text-accent">
+          {mode === "signIn" ? "Sign in" : "Create an account"}
+        </h1>
 
-      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full rounded border border-border p-2 text-sm"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          className="w-full rounded border border-border p-2 text-sm"
-        />
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            className="w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+          />
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button type="submit" disabled={submitting} className="btn-primary w-full">
+            {submitting
+              ? "One moment…"
+              : mode === "signIn"
+                ? "Sign in"
+                : "Create account"}
+          </button>
+        </form>
+
         <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-accent px-4 py-2 text-sm text-accent-foreground disabled:opacity-50"
+          onClick={() => {
+            setMode(mode === "signIn" ? "signUp" : "signIn");
+            setError(null);
+          }}
+          className="mt-4 text-sm text-muted-foreground hover:underline"
         >
-          {submitting
-            ? "One moment…"
-            : mode === "signIn"
-              ? "Sign in"
-              : "Create account"}
+          {mode === "signIn"
+            ? "Don't have an account? Sign up"
+            : "Already have an account? Sign in"}
         </button>
-      </form>
-
-      <button
-        onClick={() => {
-          setMode(mode === "signIn" ? "signUp" : "signIn");
-          setError(null);
-        }}
-        className="mt-4 text-sm text-muted-foreground hover:underline"
-      >
-        {mode === "signIn"
-          ? "Don't have an account? Sign up"
-          : "Already have an account? Sign in"}
-      </button>
+      </div>
     </main>
   );
 }

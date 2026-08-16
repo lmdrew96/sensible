@@ -18,11 +18,8 @@ export default function AdminPage() {
   return (
     <main className="mx-auto max-w-3xl p-8 min-w-3/4">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-header text-2xl font-semibold">Admin — Review Texts</h1>
-        <button
-          onClick={handleSignOut}
-          className="rounded border border-border px-3 py-1.5 text-sm"
-        >
+        <h1 className="font-header text-2xl font-semibold text-accent">Admin — Review Texts</h1>
+        <button onClick={handleSignOut} className="btn-ghost py-1.5 text-sm">
           Sign out
         </button>
       </div>
@@ -30,17 +27,17 @@ export default function AdminPage() {
       {texts?.length === 0 && (
         <p className="text-muted-foreground">No texts yet.</p>
       )}
-      <ul className="divide-y divide-border">
+      <ul className="panel divide-y divide-border/60">
         {texts?.map((text) => (
-          <li key={text._id} className="flex items-center justify-between py-3">
+          <li key={text._id} className="flex items-center justify-between px-4 py-3">
             <div>
-              <Link href={`/admin/${text.slug}`} className="font-medium hover:underline">
+              <Link href={`/admin/${text.slug}`} className="font-medium hover:text-accent">
                 {text.title}
               </Link>
               <p className="text-sm text-muted-foreground">{text.author}</p>
             </div>
             <span
-              className={`rounded px-2 py-0.5 text-xs font-medium ${
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                 text.status === "published"
                   ? "bg-green-100 text-green-800"
                   : "bg-muted text-muted-foreground"

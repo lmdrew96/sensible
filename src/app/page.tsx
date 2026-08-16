@@ -32,42 +32,43 @@ export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center p-8">
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="font-header text-5xl font-semibold">Sensible</h1>
+        <h1 className="font-header text-6xl font-semibold text-accent">Sensible</h1>
         <p className="mt-3 text-lg text-muted-foreground">
           Old writings, put in common language so they make sense.
         </p>
-        <Link
-          href="/read"
-          className="mt-6 inline-block rounded bg-accent px-4 py-2 text-sm text-accent-foreground"
-        >
+        <Link href="/read" className="btn-primary mt-6">
           Browse the Library
         </Link>
       </div>
 
-      <div className="mt-14 w-full max-w-3xl">
-        <div className="hidden gap-x-8 border-b border-border pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid sm:grid-cols-2">
+      <div className="fleuron-divider mt-14 w-full max-w-3xl">
+        <span>❦</span>
+      </div>
+
+      <div className="panel w-full max-w-3xl p-6">
+        <div className="hidden gap-x-8 pb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid sm:grid-cols-2">
           <span>Original — 1776</span>
           <span>Modernized</span>
         </div>
-        <div className="grid grid-cols-1 gap-y-4 py-4 text-sm sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0">
-          <div>
-            <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+        <div className="hairline grid grid-cols-1 gap-y-4 pb-5 text-sm sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0">
+          <p className="leaf-original">
+            <span className="mb-1 block text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
               Original — 1776
-            </p>
-            <p>{DEMO_ORIGINAL}</p>
-          </div>
-          <div>
-            <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+            </span>
+            {DEMO_ORIGINAL}
+          </p>
+          <p className="leaf-modern">
+            <span className="mb-1 block text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
               Modernized
-            </p>
-            <p>{DEMO_MODERNIZED}</p>
-          </div>
+            </span>
+            {DEMO_MODERNIZED}
+          </p>
         </div>
       </div>
 
-      <div className="mt-14 grid w-full max-w-3xl grid-cols-2 gap-6 sm:grid-cols-4">
+      <div className="mt-14 grid w-full max-w-3xl grid-cols-2 gap-5 sm:grid-cols-4">
         {FEATURES.map((feature) => (
-          <div key={feature.title} className="rounded border border-border p-4 text-left">
+          <div key={feature.title} className="panel panel-interactive p-4 text-left">
             <h2 className="font-medium">{feature.title}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{feature.description}</p>
             {feature.title === "Themes" && (

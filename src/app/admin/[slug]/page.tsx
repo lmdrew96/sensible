@@ -54,9 +54,9 @@ export default function AdminTextPage() {
       <div className="mb-6 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="font-header text-2xl font-semibold">{text.title}</h1>
+            <h1 className="font-header text-2xl font-semibold text-accent">{text.title}</h1>
             <span
-              className={`rounded px-2 py-0.5 text-xs font-medium ${
+              className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                 text.status === "published"
                   ? "bg-green-100 text-green-800"
                   : "bg-muted text-muted-foreground"
@@ -71,16 +71,13 @@ export default function AdminTextPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link
-            href={`/read/${text.slug}`}
-            className="rounded border border-border px-3 py-1.5 text-sm"
-          >
+          <Link href={`/read/${text.slug}`} className="btn-ghost py-1.5 text-sm">
             View reader
           </Link>
           <button
             onClick={handleApproveAll}
             disabled={draftCount === 0}
-            className="rounded bg-green-700 px-3 py-1.5 text-sm text-white disabled:opacity-40"
+            className="rounded-md bg-green-700 px-3 py-1.5 text-sm text-white shadow-sm disabled:opacity-40"
           >
             Approve All ({draftCount})
           </button>
@@ -95,7 +92,7 @@ export default function AdminTextPage() {
                 ? "Stop the sweep after its current batch finishes"
                 : "Scans every approved section that hasn't been checked yet and suggests glosses for the ones that need them"
             }
-            className={`rounded border px-3 py-1.5 text-sm disabled:opacity-40 ${
+            className={`rounded-md border px-3 py-1.5 text-sm disabled:opacity-40 ${
               text.glossSweepActive
                 ? "border-amber-400 bg-amber-100 text-amber-800"
                 : "border-border"
@@ -112,7 +109,7 @@ export default function AdminTextPage() {
                 ? `${unapprovedCount} section${unapprovedCount === 1 ? "" : "s"} not yet approved`
                 : undefined
             }
-            className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-40"
+            className="btn-primary py-1.5 text-sm disabled:opacity-40"
           >
             {text.status === "published" ? "Published" : "Publish"}
           </button>

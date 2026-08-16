@@ -141,24 +141,21 @@ function ReaderPageInner({ slug }: { slug: string }) {
 
   return (
     <main className="mx-auto max-w-5xl p-8">
-      <header className="mb-8 border-b border-border pb-6">
-        <h1 className="font-header text-3xl font-semibold">{text.title}</h1>
+      <header className="mb-8 pb-6">
+        <h1 className="font-header text-4xl font-semibold text-accent">{text.title}</h1>
         <p className="mt-1 text-muted-foreground">
           {text.author}, {text.year}
         </p>
         {text.isTranslation && text.translationNote && (
           <p className="mt-1 text-sm text-muted-foreground italic">{text.translationNote}</p>
         )}
-        <button
-          onClick={() => setSingleSide(!singleSide)}
-          className="mt-4 rounded border border-border px-3 py-1.5 text-sm"
-        >
+        <button onClick={() => setSingleSide(!singleSide)} className="btn-ghost mt-4">
           {singleSide ? "Show original side by side" : "Modernized only"}
         </button>
       </header>
 
       {resumeTarget && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded border border-border bg-muted/40 p-3 text-sm">
+        <div className="panel mb-6 flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
           <span>You were partway through this text.</span>
           <div className="flex items-center gap-3">
             <button
@@ -166,7 +163,7 @@ function ReaderPageInner({ slug }: { slug: string }) {
                 jumpToSection(resumeTarget);
                 setResumeTarget(null);
               }}
-              className="rounded bg-accent px-3 py-1 text-xs text-accent-foreground"
+              className="btn-primary py-1 text-xs"
             >
               Jump back in
             </button>
@@ -181,7 +178,7 @@ function ReaderPageInner({ slug }: { slug: string }) {
       )}
 
       {landmarks.length > 1 && (
-        <details className="mb-6 rounded border border-border p-3 text-sm">
+        <details className="panel mb-6 p-4 text-sm">
           <summary className="cursor-pointer font-medium">
             Contents{currentLandmark ? ` — currently in ${currentLandmark.label}` : ""}
           </summary>
@@ -194,8 +191,8 @@ function ReaderPageInner({ slug }: { slug: string }) {
                   e.preventDefault();
                   jumpToSection(l.id);
                 }}
-                className={`rounded px-2 py-1 hover:bg-muted ${
-                  l.id === currentLandmark?.id ? "font-medium text-foreground" : "text-muted-foreground"
+                className={`rounded-md px-2 py-1 hover:bg-muted/60 ${
+                  l.id === currentLandmark?.id ? "font-medium text-accent" : "text-muted-foreground"
                 }`}
               >
                 {l.label}
@@ -212,64 +209,74 @@ function ReaderPageInner({ slug }: { slug: string }) {
         </p>
       )}
 
-      {!singleSide && (
-        <div className="hidden gap-x-8 border-b border-border pb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid sm:grid-cols-2">
-          <span>Original</span>
-          <span>Modernized</span>
-        </div>
-      )}
+      {sections && sections.length > 0 && (
+        <div className="panel reader-text p-6 sm:p-8">
+          {!singleSide && (
+            <div className="hairline hidden gap-x-8 pb-3 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:grid sm:grid-cols-2">
+              <span>Original</span>
+              <span>Modernized</span>
+            </div>
+          )}
 
-      <div className="reader-text">
-        {sections?.map((section) => (
-          <div
-            key={section._id}
-            id={`section-${section._id}`}
-            data-section-id={section._id}
-            ref={handleSectionRef}
-          >
-            {singleSide ? (
-              <HighlightableText
-                sectionId={section._id}
-                side="modernized"
-                text={section.modernized ?? ""}
-                speaker={section.speaker}
-                className="border-b border-border py-4"
-              />
-            ) : (
-              <div className="grid grid-cols-1 gap-y-4 border-b border-border py-4 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0">
-                <div>
-                  <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
-                    Original
-                  </span>
-                  <HighlightableText
-                    sectionId={section._id}
-                    side="original"
-                    text={section.original}
-                    speaker={section.speaker}
-                  />
-                </div>
-                <div>
-                  <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
-                    Modernized
-                  </span>
+          {sections.map((section, i) => {
+            const isLandmark = landmarks.some((l) => l.id === section._id);
+            return (
+              <div
+                key={section._id}
+                id={`section-${section._id}`}
+                data-section-id={section._id}
+                ref={handleSectionRef}
+              >
+                {isLandmark && i > 0 && (
+                  <div className="fleuron-divider" aria-hidden="true">
+                    <span>❦</span>
+                  </div>
+                )}
+                {singleSide ? (
                   <HighlightableText
                     sectionId={section._id}
                     side="modernized"
                     text={section.modernized ?? ""}
                     speaker={section.speaker}
+                    className="hairline py-4"
                   />
-                </div>
+                ) : (
+                  <div className="hairline grid grid-cols-1 gap-y-4 py-4 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0">
+                    <div className="leaf-original">
+                      <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
+                        Original
+                      </span>
+                      <HighlightableText
+                        sectionId={section._id}
+                        side="original"
+                        text={section.original}
+                        speaker={section.speaker}
+                      />
+                    </div>
+                    <div className="leaf-modern">
+                      <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
+                        Modernized
+                      </span>
+                      <HighlightableText
+                        sectionId={section._id}
+                        side="modernized"
+                        text={section.modernized ?? ""}
+                        speaker={section.speaker}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {showBackToTop && (
         <button
           onClick={scrollToTop}
           aria-label="Back to top of text"
-          className="fixed right-4 bottom-4 z-20 rounded border border-border bg-background px-3 py-2 text-sm shadow-sm hover:border-foreground/50 sm:right-6 sm:bottom-6"
+          className="btn-ghost fixed right-4 bottom-4 z-20 sm:right-6 sm:bottom-6"
         >
           ↑ Top
         </button>

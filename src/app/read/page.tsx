@@ -55,7 +55,7 @@ export default function LibraryPage() {
   return (
     <main className="mx-auto max-w-3xl p-8 min-w-3/4">
       <header className="mb-8">
-        <h1 className="font-header text-3xl font-semibold">The Library</h1>
+        <h1 className="font-header text-4xl font-semibold text-accent">The Library</h1>
         <p className="mt-1 text-muted-foreground">
           Old writings, put in common language so they make sense.
         </p>
@@ -78,12 +78,12 @@ export default function LibraryPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title or author…"
-                className="flex-1 rounded border border-border bg-background px-3 py-2 text-sm"
+                className="panel flex-1 px-3 py-2 text-sm outline-none focus:border-accent"
               />
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortOption)}
-                className="rounded border border-border bg-background px-3 py-2 text-sm"
+                className="panel px-3 py-2 text-sm outline-none focus:border-accent"
               >
                 <option value="default">Library order</option>
                 <option value="title">Title (A–Z)</option>
@@ -96,11 +96,7 @@ export default function LibraryPage() {
                 <button
                   key={type}
                   onClick={() => toggleDifficulty(type)}
-                  className={`rounded-full border px-3 py-1 text-xs ${
-                    difficultyFilter.has(type)
-                      ? "border-accent bg-accent text-accent-foreground"
-                      : "border-border text-muted-foreground hover:border-foreground/50"
-                  }`}
+                  className={`pill ${difficultyFilter.has(type) ? "pill-active" : ""}`}
                 >
                   {DIFFICULTY_LABELS[type]}
                 </button>
@@ -117,9 +113,9 @@ export default function LibraryPage() {
               <Link
                 key={text._id}
                 href={`/read/${text.slug}`}
-                className="block rounded border border-border p-4 hover:border-foreground/50"
+                className="panel panel-interactive block p-4"
               >
-                <h2 className="font-medium">{text.title}</h2>
+                <h2 className="font-medium text-foreground">{text.title}</h2>
                 <p className="text-sm text-muted-foreground">
                   {text.author}, {text.year}
                 </p>

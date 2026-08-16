@@ -37,21 +37,21 @@ export default function AdminLoginPage() {
 
   return (
     <main className="flex flex-1 items-center justify-center p-8">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm">
-        <h1 className="mb-4 text-xl font-semibold">Admin Login</h1>
+      <form onSubmit={handleSubmit} className="panel w-full max-w-sm p-6">
+        <h1 className="font-header text-2xl font-semibold text-accent">Admin Login</h1>
         <input
           type="password"
           autoFocus
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
-          className="w-full rounded border border-border px-3 py-2 text-sm"
+          className="mt-4 w-full rounded-md border border-border bg-background px-3 py-2 text-sm outline-none focus:border-accent"
         />
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
         <button
           type="submit"
           disabled={submitting || !password}
-          className="mt-3 w-full rounded bg-accent px-4 py-2 text-sm text-accent-foreground disabled:opacity-50"
+          className="btn-primary mt-3 w-full"
         >
           {submitting ? "Checking…" : "Log in"}
         </button>

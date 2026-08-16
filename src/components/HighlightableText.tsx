@@ -265,7 +265,7 @@ export function HighlightableText({
         </p>
       )}
       {activeGloss && (
-        <div className="mt-2 rounded border border-border bg-muted/40 p-3 text-sm">
+        <div className="mt-2 rounded-lg border border-border bg-muted/30 p-3 text-sm shadow-sm">
           <p className="font-medium">{activeGloss.term}</p>
           <p className="mt-1 text-muted-foreground">{activeGloss.explanation}</p>
           <button
@@ -277,7 +277,7 @@ export function HighlightableText({
         </div>
       )}
       {activeHighlight && (
-        <div className="mt-2 rounded border border-border bg-muted/40 p-3">
+        <div className="mt-2 rounded-lg border border-border bg-muted/30 p-3 shadow-sm">
           <p className="mb-2 text-xs text-muted-foreground italic">
             &ldquo;{activeHighlight.text}&rdquo;
           </p>
@@ -285,20 +285,17 @@ export function HighlightableText({
             value={noteDraft}
             onChange={(e) => setNoteDraft(e.target.value)}
             placeholder="Add a note…"
-            className="w-full rounded border border-border bg-background p-2 text-sm"
+            className="w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
             rows={2}
             autoFocus
           />
-          <div className="mt-2 flex gap-2">
-            <button
-              onClick={handleSaveNote}
-              className="rounded bg-accent px-3 py-1 text-xs text-accent-foreground"
-            >
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button onClick={handleSaveNote} className="btn-primary py-1 text-xs">
               Save
             </button>
             <button
               onClick={handleDelete}
-              className="rounded border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50"
+              className="rounded-md border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50"
             >
               Remove highlight
             </button>
@@ -306,7 +303,7 @@ export function HighlightableText({
               <button
                 onClick={handleWhatDoesThisMean}
                 disabled={glossRequestState === "loading"}
-                className="rounded border border-border px-3 py-1 text-xs hover:bg-muted disabled:opacity-50"
+                className="btn-ghost py-1 text-xs disabled:opacity-50"
               >
                 {glossRequestState === "loading" ? "Asking…" : "What does this mean?"}
               </button>
@@ -322,7 +319,7 @@ export function HighlightableText({
             <p className="mt-2 text-xs text-red-700">Couldn&apos;t get an explanation -- try again.</p>
           )}
           {requestedGloss && (
-            <div className="mt-2 rounded border border-border bg-background p-2 text-sm">
+            <div className="mt-2 rounded-md border border-border bg-background p-2 text-sm">
               <p className="font-medium">{requestedGloss.term}</p>
               <p className="mt-1 text-muted-foreground">{requestedGloss.explanation}</p>
             </div>

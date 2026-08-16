@@ -87,13 +87,13 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   };
 
   return (
-    <div className="border-b border-border py-6">
+    <div className="panel mb-4 p-5">
       <div className="mb-2 flex items-center justify-between">
         <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
           Section {section.order + 1}
         </span>
         <span
-          className={`rounded px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[section.status]}`}
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[section.status]}`}
         >
           {section.status}
         </span>
@@ -113,7 +113,7 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
             </p>
           </div>
           <textarea
-            className="h-full min-h-32 w-full rounded border border-border p-2 text-sm"
+            className="h-full min-h-32 w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="No draft yet — click Generate Draft"
@@ -121,29 +121,25 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
         </div>
       </div>
       <div className="mt-3 flex gap-2">
-        <button
-          onClick={handleGenerate}
-          disabled={generating}
-          className="rounded bg-accent px-3 py-1.5 text-sm text-accent-foreground disabled:opacity-50"
-        >
+        <button onClick={handleGenerate} disabled={generating} className="btn-primary py-1.5 text-sm">
           {generating ? "Generating…" : draft ? "Regenerate Draft" : "Generate Draft"}
         </button>
         <button
           onClick={handleApprove}
-          className="rounded bg-green-700 px-3 py-1.5 text-sm text-white"
+          className="rounded-md bg-green-700 px-3 py-1.5 text-sm text-white shadow-sm"
         >
           Approve
         </button>
         <button
           onClick={handleSuggestGlosses}
           disabled={glossing || !draft}
-          className="rounded border border-border px-3 py-1.5 text-sm disabled:opacity-50"
+          className="btn-ghost py-1.5 text-sm disabled:opacity-50"
         >
           {glossing ? "Suggesting…" : glosses.length ? "Re-suggest Glosses" : "Suggest Glosses"}
         </button>
         <button
           onClick={handleDelete}
-          className="ml-auto rounded border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+          className="ml-auto rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
         >
           Delete
         </button>
@@ -154,16 +150,16 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
           {glosses.map((gloss) => (
             <li
               key={gloss._id}
-              className="flex items-start justify-between gap-3 rounded border border-border p-2 text-sm"
+              className="flex items-start justify-between gap-3 rounded-md border border-border bg-background/40 p-2 text-sm"
             >
               <div>
                 <span
-                  className={`mr-2 rounded px-1.5 py-0.5 text-xs font-medium ${GLOSS_STATUS_STYLES[gloss.status]}`}
+                  className={`mr-2 rounded-full px-1.5 py-0.5 text-xs font-medium ${GLOSS_STATUS_STYLES[gloss.status]}`}
                 >
                   {gloss.status}
                 </span>
                 {gloss.source === "reader_request" && (
-                  <span className="mr-2 rounded bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800">
+                  <span className="mr-2 rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-medium text-blue-800">
                     from a reader{gloss.requestCount && gloss.requestCount > 1 ? ` — asked ${gloss.requestCount}×` : ""}
                   </span>
                 )}
@@ -174,14 +170,14 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
                 {gloss.status === "suggested" && (
                   <button
                     onClick={() => approveGloss({ glossId: gloss._id })}
-                    className="rounded bg-green-700 px-2 py-1 text-xs text-white"
+                    className="rounded-md bg-green-700 px-2 py-1 text-xs text-white"
                   >
                     Approve
                   </button>
                 )}
                 <button
                   onClick={() => removeGloss({ glossId: gloss._id })}
-                  className="rounded border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+                  className="rounded-md border border-red-300 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
                 >
                   {gloss.status === "approved" ? "Remove" : "Reject"}
                 </button>

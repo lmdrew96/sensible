@@ -15,6 +15,7 @@
   --border: #6f6157;
   --accent: #7e7063;
   --accent-foreground: #ffffff;
+  --surface: #f4ebe7;
 }
 
 html[data-theme="henna"][data-mode="light"] {
@@ -25,6 +26,7 @@ html[data-theme="henna"][data-mode="light"] {
   --border: #6f6157;
   --accent: #7e7063;
   --accent-foreground: #ffffff;
+  --surface: #f4ebe7;
 }
 
 html[data-theme="henna"][data-mode="dark"] {
@@ -35,6 +37,7 @@ html[data-theme="henna"][data-mode="dark"] {
   --border: #9c8e8a;
   --accent: #7e7063;
   --accent-foreground: #ffffff;
+  --surface: #554839;
 }
 
 html[data-theme="sage"][data-mode="light"] {
@@ -45,6 +48,7 @@ html[data-theme="sage"][data-mode="light"] {
   --border: #61645d;
   --accent: #727767;
   --accent-foreground: #ffffff;
+  --surface: #eef2e9;
 }
 
 html[data-theme="sage"][data-mode="dark"] {
@@ -55,6 +59,7 @@ html[data-theme="sage"][data-mode="dark"] {
   --border: #818f84;
   --accent: #727767;
   --accent-foreground: #ffffff;
+  --surface: #46524a;
 }
 
 html[data-theme="indigo"][data-mode="light"] {
@@ -65,6 +70,7 @@ html[data-theme="indigo"][data-mode="light"] {
   --border: #666679;
   --accent: #6b7491;
   --accent-foreground: #ffffff;
+  --surface: #eef1f4;
 }
 
 html[data-theme="indigo"][data-mode="dark"] {
@@ -75,6 +81,7 @@ html[data-theme="indigo"][data-mode="dark"] {
   --border: #848ca1;
   --accent: #6b7491;
   --accent-foreground: #ffffff;
+  --surface: #5c4b60;
 }
 
 @theme inline {
@@ -85,6 +92,7 @@ html[data-theme="indigo"][data-mode="dark"] {
   --color-border: var(--border);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-surface: var(--surface);
   --font-sans: var(--font-montserrat);
   --font-mono: var(--font-monofont);
   --font-header: var(--font-fredericka);
@@ -136,4 +144,156 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, ui-sans-serif;
+}
+
+/* Archival reading-room components -- shadows and rules are ink-tinted via
+   color-mix() off each theme's --border, so one definition works across all
+   three palettes and both modes instead of six shadow variables. */
+@layer components {
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--border) 35%, transparent),
+      0 10px 24px -12px color-mix(in srgb, var(--border) 70%, transparent);
+  }
+
+  .panel-interactive {
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  .panel-interactive:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+    box-shadow:
+      0 2px 4px color-mix(in srgb, var(--border) 40%, transparent),
+      0 16px 32px -14px color-mix(in srgb, var(--border) 80%, transparent);
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.6rem;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    box-shadow:
+      0 1px 2px color-mix(in srgb, var(--border) 45%, transparent),
+      0 8px 18px -8px color-mix(in srgb, var(--border) 70%, transparent);
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    transform: none;
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.6rem;
+    border: 1px solid var(--border);
+    padding: 0.5rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: var(--surface);
+    transition:
+      border-color 0.15s ease,
+      background 0.15s ease;
+  }
+
+  .btn-ghost:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+    background: color-mix(in srgb, var(--muted) 25%, var(--surface));
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition:
+      border-color 0.15s ease,
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .pill-active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  .pill:not(.pill-active) {
+    color: var(--muted-foreground);
+  }
+
+  .pill:not(.pill-active):hover {
+    border-color: color-mix(in srgb, var(--foreground) 50%, var(--border));
+  }
+
+  /* A hairline rule, softer than a full-strength border -- for dividing
+     paragraphs within one continuous reading surface. */
+  .hairline {
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+  }
+
+  /* Printer's fleuron: the ornamental break old books used between
+     chapters/sections, reused here at true landmark boundaries (not every
+     paragraph) so the divider encodes "new chapter," not decoration. */
+  .fleuron-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--muted-foreground);
+    margin: 2.5rem 0;
+  }
+
+  .fleuron-divider::before,
+  .fleuron-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, var(--border) 60%, transparent);
+  }
+
+  .fleuron-divider span {
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  /* The Original column carries a faint ink wash and a margin rule, like a
+     manuscript page; the Modernized column stays plain paper -- the split
+     itself shows what the app does before a reader reads a word. */
+  .leaf-original {
+    background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+    border-left: 3px solid color-mix(in srgb, var(--accent) 55%, var(--border));
+    padding-left: 1rem;
+  }
+
+  .leaf-modern {
+    padding-left: 1rem;
+    border-left: 3px solid transparent;
+  }
 }

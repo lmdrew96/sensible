@@ -14,7 +14,7 @@ export default function SettingsPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-8 min-w-3/4">
-      <h1 className="font-header text-3xl font-semibold">Settings</h1>
+      <h1 className="font-header text-4xl font-semibold text-accent">Settings</h1>
 
       <section className="mt-8">
         <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
@@ -29,10 +29,8 @@ export default function SettingsPage() {
           {THEMES.map((option) => (
             <label
               key={option.value}
-              className={`flex flex-1 cursor-pointer flex-col items-center gap-2 rounded border p-3 ${
-                theme === option.value
-                  ? "border-foreground"
-                  : "border-border hover:border-foreground/50"
+              className={`panel panel-interactive flex flex-1 cursor-pointer flex-col items-center gap-2 p-3 ${
+                theme === option.value ? "border-accent" : ""
               }`}
             >
               <input
@@ -44,7 +42,7 @@ export default function SettingsPage() {
                 className="sr-only"
               />
               <span
-                className="h-8 w-8 rounded-full border border-border"
+                className="h-8 w-8 rounded-full border border-border shadow-sm"
                 style={{ backgroundColor: option.swatch }}
               />
               <span className="text-sm font-medium">{option.label}</span>
@@ -65,10 +63,8 @@ export default function SettingsPage() {
           {READER_FONTS.map((option) => (
             <label
               key={option.value}
-              className={`flex cursor-pointer items-center justify-between rounded border p-3 ${
-                font === option.value
-                  ? "border-foreground"
-                  : "border-border hover:border-foreground/50"
+              className={`panel panel-interactive flex cursor-pointer items-center justify-between p-3 ${
+                font === option.value ? "border-accent" : ""
               }`}
             >
               <div className="flex w-50 shrink-0 items-center gap-2">
@@ -102,10 +98,8 @@ export default function SettingsPage() {
           {READER_SIZES.map((option) => (
             <label
               key={option.value}
-              className={`flex cursor-pointer items-center justify-between rounded border p-3 ${
-                size === option.value
-                  ? "border-foreground"
-                  : "border-border hover:border-foreground/50"
+              className={`panel panel-interactive flex cursor-pointer items-center justify-between p-3 ${
+                size === option.value ? "border-accent" : ""
               }`}
             >
               <div className="flex w-50 shrink-0 items-center gap-2">
