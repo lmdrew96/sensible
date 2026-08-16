@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, ReactNode, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Doc, Id } from "@convex/_generated/dataModel";
@@ -156,7 +157,6 @@ export function HighlightableText({
     if (!isAuthenticated) {
       selection.removeAllRanges();
       setSignInHint(true);
-      setTimeout(() => setSignInHint(false), 2500);
       return;
     }
 
@@ -242,7 +242,17 @@ export function HighlightableText({
         <span ref={containerRef}>{rendered}</span>
       </p>
       {signInHint && (
-        <p className="mt-1 text-xs text-muted-foreground">Sign in to highlight and annotate.</p>
+        <p className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+          <span>
+            <Link href="/login" className="underline hover:no-underline">
+              Sign in
+            </Link>{" "}
+            to highlight and annotate.
+          </span>
+          <button onClick={() => setSignInHint(false)} className="hover:underline">
+            Dismiss
+          </button>
+        </p>
       )}
       {activeGloss && (
         <div className="mt-2 rounded border border-border bg-muted/40 p-3 text-sm">
