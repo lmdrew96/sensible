@@ -67,6 +67,22 @@ export const replaceSuggestions = internalMutation({
   },
 });
 
+// Reader-requested answers for a section, regardless of approval status --
+// these are already what requestGloss would hand back to anyone asking
+// about the same term, so showing them proactively (e.g. when a reader
+// reopens a highlight they'd previously asked about) leaks nothing new.
+// Deliberately excludes ai_sweep suggestions, which haven't been reviewed.
+export const listRequestedForSection = query({
+  args: { sectionId: v.id("sections") },
+  handler: async (ctx, { sectionId }) => {
+    const glosses = await ctx.db
+      .query("glosses")
+      .withIndex("by_section", (q) => q.eq("sectionId", sectionId))
+      .collect();
+    return glosses.filter((g) => g.source === "reader_request");
+  },
+});
+
 // Point lookup for glossify.requestGloss's dedup check -- a reader asking
 // about a term that's already been requested or AI-suggested for this
 // section should bump the existing row instead of paying for another

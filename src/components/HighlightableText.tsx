@@ -129,6 +129,15 @@ export function HighlightableText({
   const glosses = useMemo(() => glossesResult ?? [], [glossesResult]);
   const [activeGloss, setActiveGloss] = useState<Gloss | null>(null);
 
+  // Answers to "What does this mean?" already asked for this section --
+  // reopening a highlight whose text matches one of these shows the answer
+  // straight away instead of making the reader click and wait again.
+  const requestedGlossesResult = useQuery(
+    api.glosses.listRequestedForSection,
+    side === "modernized" ? { sectionId } : "skip",
+  );
+  const requestedGlosses = useMemo(() => requestedGlossesResult ?? [], [requestedGlossesResult]);
+
   // Original text is verbatim historical source -- never reinterpret stray
   // asterisks/pound signs as formatting. Only the LLM-authored modernized
   // side uses the bold/italic/heading subset.
@@ -172,7 +181,8 @@ export function HighlightableText({
   const openNoteEditor = (highlight: Highlight) => {
     setActiveHighlight(highlight);
     setNoteDraft(highlight.note ?? "");
-    setRequestedGloss(null);
+    const cached = requestedGlosses.find((g) => g.term === highlight.text);
+    setRequestedGloss(cached ? { term: cached.term, explanation: cached.explanation } : null);
     setGlossRequestState("idle");
   };
 
