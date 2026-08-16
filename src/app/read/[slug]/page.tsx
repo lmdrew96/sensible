@@ -6,6 +6,7 @@ import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { HighlightableText } from "@/components/HighlightableText";
 import { useReadingPosition } from "@/components/useReadingPosition";
+import { useSingleSide } from "@/components/useSingleSide";
 import { parseDelimited } from "@/lib/richText";
 
 function prefersReducedMotion(): boolean {
@@ -30,7 +31,7 @@ export default function ReaderPage() {
 }
 
 function ReaderPageInner({ slug }: { slug: string }) {
-  const [singleSide, setSingleSide] = useState(false);
+  const { singleSide, setSingleSide } = useSingleSide();
 
   const text = useQuery(api.texts.getBySlug, { slug });
   const sections = useQuery(
@@ -149,7 +150,7 @@ function ReaderPageInner({ slug }: { slug: string }) {
           <p className="mt-1 text-sm text-muted-foreground italic">{text.translationNote}</p>
         )}
         <button
-          onClick={() => setSingleSide((v) => !v)}
+          onClick={() => setSingleSide(!singleSide)}
           className="mt-4 rounded border border-border px-3 py-1.5 text-sm"
         >
           {singleSide ? "Show original side by side" : "Modernized only"}
