@@ -66,6 +66,20 @@ function ReaderPageInner({ slug }: { slug: string }) {
     if (id) sectionEls.current.set(id, el);
   }, []);
 
+  // Which sections' Original block is expanded on mobile -- collapsed by
+  // default there so the reader isn't scrolling past a full duplicate of
+  // the text before reaching the modernized version. Irrelevant at sm+,
+  // where both columns always show side by side.
+  const [expandedOriginals, setExpandedOriginals] = useState<Set<string>>(new Set());
+  const toggleOriginal = useCallback((sectionId: string) => {
+    setExpandedOriginals((prev) => {
+      const next = new Set(prev);
+      if (next.has(sectionId)) next.delete(sectionId);
+      else next.add(sectionId);
+      return next;
+    });
+  }, []);
+
   const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
   const { savedSectionId, recordPosition, loaded } = useReadingPosition(slug);
   const [resumeTarget, setResumeTarget] = useState<string | null>(null);
@@ -243,15 +257,29 @@ function ReaderPageInner({ slug }: { slug: string }) {
                 ) : (
                   <div className="hairline grid grid-cols-1 gap-y-4 py-4 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0">
                     <div className="leaf-original">
-                      <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
+                      <button
+                        type="button"
+                        onClick={() => toggleOriginal(section._id)}
+                        aria-expanded={expandedOriginals.has(section._id)}
+                        className="mb-1 inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-1 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden"
+                      >
                         Original
-                      </span>
-                      <HighlightableText
-                        sectionId={section._id}
-                        side="original"
-                        text={section.original}
-                        speaker={section.speaker}
-                      />
+                        <span aria-hidden="true">
+                          {expandedOriginals.has(section._id) ? "▲" : "▼"}
+                        </span>
+                      </button>
+                      <div
+                        className={
+                          expandedOriginals.has(section._id) ? "block" : "hidden sm:block"
+                        }
+                      >
+                        <HighlightableText
+                          sectionId={section._id}
+                          side="original"
+                          text={section.original}
+                          speaker={section.speaker}
+                        />
+                      </div>
                     </div>
                     <div className="leaf-modern">
                       <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
