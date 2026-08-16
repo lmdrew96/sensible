@@ -237,9 +237,9 @@ function ReaderPageInner({ slug }: { slug: string }) {
             ) : (
               <div className="grid grid-cols-1 gap-y-4 border-b border-border py-4 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-0">
                 <div>
-                  <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+                  <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
                     Original
-                  </p>
+                  </span>
                   <HighlightableText
                     sectionId={section._id}
                     side="original"
@@ -248,9 +248,9 @@ function ReaderPageInner({ slug }: { slug: string }) {
                   />
                 </div>
                 <div>
-                  <p className="mb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase sm:hidden">
+                  <span className="mb-1 inline-block rounded-full border border-border px-2 py-0.5 text-[10px] tracking-wide text-muted-foreground uppercase sm:hidden">
                     Modernized
-                  </p>
+                  </span>
                   <HighlightableText
                     sectionId={section._id}
                     side="modernized"
