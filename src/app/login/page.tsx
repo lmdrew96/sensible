@@ -96,7 +96,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+            className="w-full rounded-md border border-border bg-background p-2 text-base outline-none focus:border-accent sm:text-sm"
           />
           <input
             type="password"
@@ -105,7 +105,7 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            className="w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+            className="w-full rounded-md border border-border bg-background p-2 text-base outline-none focus:border-accent sm:text-sm"
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button type="submit" disabled={submitting} className="btn-primary w-full">

@@ -302,7 +302,7 @@ export function HighlightableText({
             value={noteDraft}
             onChange={(e) => setNoteDraft(e.target.value)}
             placeholder="Add a note…"
-            className="w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+            className="w-full rounded-md border border-border bg-background p-2 text-base outline-none focus:border-accent sm:text-sm"
             rows={2}
             autoFocus
           />

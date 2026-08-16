@@ -78,12 +78,12 @@ export default function LibraryPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search by title or author…"
-                className="panel min-w-0 flex-1 px-3 py-2 text-sm outline-none focus:border-accent"
+                className="panel min-w-0 flex-1 px-3 py-2 text-base outline-none focus:border-accent sm:text-sm"
               />
               <select
                 value={sort}
                 onChange={(e) => setSort(e.target.value as SortOption)}
-                className="panel w-full px-3 py-2 text-sm outline-none focus:border-accent sm:w-auto"
+                className="panel w-full px-3 py-2 text-base outline-none focus:border-accent sm:w-auto sm:text-sm"
               >
                 <option value="default">Library order</option>
                 <option value="title">Title (A–Z)</option>

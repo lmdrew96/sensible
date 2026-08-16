@@ -113,7 +113,7 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
             </p>
           </div>
           <textarea
-            className="h-full min-h-32 w-full rounded-md border border-border bg-background p-2 text-sm outline-none focus:border-accent"
+            className="h-full min-h-32 w-full rounded-md border border-border bg-background p-2 text-base outline-none focus:border-accent sm:text-sm"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="No draft yet — click Generate Draft"
