@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, ReactNode, useMemo, useRef, useState } from "react";
+import { Fragment, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAction, useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
@@ -153,30 +153,47 @@ export function HighlightableText({
   const [requestedGloss, setRequestedGloss] = useState<{ term: string; explanation: string } | null>(null);
   const [glossRequestState, setGlossRequestState] = useState<"idle" | "loading" | "error">("idle");
 
-  const handleMouseUp = () => {
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !containerRef.current) return;
-    if (
-      !containerRef.current.contains(selection.anchorNode) ||
-      !containerRef.current.contains(selection.focusNode)
-    ) {
-      return;
-    }
+  // Touch devices finalize text selection through native drag handles rather
+  // than a mouseup on the selected element, so a mouseup-only listener never
+  // fires there. selectionchange fires reliably for both mouse and touch;
+  // debouncing it waits until the selection stops moving (finger lifted,
+  // handles released) before treating it as final.
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const handleSelectionChange = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const selection = window.getSelection();
+        if (!selection || selection.isCollapsed || !containerRef.current) return;
+        if (
+          !containerRef.current.contains(selection.anchorNode) ||
+          !containerRef.current.contains(selection.focusNode)
+        ) {
+          return;
+        }
 
-    if (!isAuthenticated) {
-      selection.removeAllRanges();
-      setSignInHint(true);
-      return;
-    }
+        if (!isAuthenticated) {
+          selection.removeAllRanges();
+          setSignInHint(true);
+          return;
+        }
 
-    const a = offsetWithinContainer(containerRef.current, selection.anchorNode!, selection.anchorOffset);
-    const b = offsetWithinContainer(containerRef.current, selection.focusNode!, selection.focusOffset);
-    const [start, end] = a < b ? [a, b] : [b, a];
-    selection.removeAllRanges();
-    if (end <= start) return;
+        const a = offsetWithinContainer(containerRef.current, selection.anchorNode!, selection.anchorOffset);
+        const b = offsetWithinContainer(containerRef.current, selection.focusNode!, selection.focusOffset);
+        const [start, end] = a < b ? [a, b] : [b, a];
+        selection.removeAllRanges();
+        if (end <= start) return;
 
-    void createHighlight({ sectionId, side, startOffset: start, endOffset: end, text: plain.slice(start, end) });
-  };
+        void createHighlight({ sectionId, side, startOffset: start, endOffset: end, text: plain.slice(start, end) });
+      }, 300);
+    };
+
+    document.addEventListener("selectionchange", handleSelectionChange);
+    return () => {
+      document.removeEventListener("selectionchange", handleSelectionChange);
+      clearTimeout(timeout);
+    };
+  }, [isAuthenticated, sectionId, side, plain, createHighlight]);
 
   const openNoteEditor = (highlight: Highlight) => {
     setActiveHighlight(highlight);
@@ -247,7 +264,7 @@ export function HighlightableText({
 
   return (
     <div className={className}>
-      <p onMouseUp={handleMouseUp} className="whitespace-pre-line">
+      <p className="whitespace-pre-line">
         {speaker && <strong>{speaker}: </strong>}
         <span ref={containerRef}>{rendered}</span>
       </p>
