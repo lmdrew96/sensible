@@ -17,6 +17,46 @@ function scrollToSection(el: HTMLElement) {
   el.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
 }
 
+type Landmark = { id: string; order: number; label: string; level: 1 | 2 | 3 };
+type LandmarkNode = Landmark & { children: LandmarkNode[] };
+
+// Renders the Contents outline recursively, indenting each level so a ##
+// reads as nested under its enclosing #.
+function LandmarkLinks({
+  nodes,
+  currentId,
+  onJump,
+}: {
+  nodes: LandmarkNode[];
+  currentId: string | undefined;
+  onJump: (id: string) => void;
+}) {
+  return (
+    <>
+      {nodes.map((l) => (
+        <div key={l.id}>
+          <a
+            href={`#section-${l.id}`}
+            onClick={(e) => {
+              e.preventDefault();
+              onJump(l.id);
+            }}
+            style={{ paddingLeft: `${(l.level - 1) * 1}rem` }}
+            className={`block rounded-md px-2 py-1 hover:bg-muted/60 ${
+              l.id === currentId ? "font-medium text-accent" : "text-muted-foreground"
+            }`}
+          >
+            {l.label}
+          </a>
+          {l.children.length > 0 && (
+            <LandmarkLinks nodes={l.children} currentId={currentId} onJump={onJump} />
+          )}
+        </div>
+      ))}
+    </>
+  );
+}
+
 // Threshold below which the back-to-top button appears -- roughly past the
 // header, resume banner, and Contents panel, so it shows up once "top"
 // actually means scrolling back rather than just being a step away.
@@ -42,22 +82,42 @@ function ReaderPageInner({ slug }: { slug: string }) {
   // Sections whose entire modernized text is a "# " heading are chapter/
   // act/article breaks the import pipeline split out on their own (see
   // scripts/import.ts's h2|h3 extraction) -- the natural landmarks for a
-  // table of contents, with no schema changes needed.
+  // table of contents, with no schema changes needed. Their heading level
+  // (# / ## / ###) drives the Contents panel's nesting.
   const landmarks = useMemo(() => {
     if (!sections) return [];
-    const result: { id: string; order: number; label: string }[] = [];
+    const result: Landmark[] = [];
     for (const section of sections) {
       if (!section.modernized) continue;
       const { plain, ranges } = parseDelimited(section.modernized);
       const label = plain.trim();
       if (!label) continue;
-      const isWholeHeading = ranges.some(
+      const headingRange = ranges.find(
         (r) => r.type === "heading" && r.start === 0 && r.end === plain.length,
       );
-      if (isWholeHeading) result.push({ id: section._id, order: section.order, label });
+      if (headingRange) {
+        result.push({ id: section._id, order: section.order, label, level: headingRange.level ?? 1 });
+      }
     }
     return result;
   }, [sections]);
+
+  // Nests the flat, order-sorted landmark list by heading level -- a ## falls
+  // under the last # above it, a ### under the last ## (or #), and so on --
+  // so the Contents panel reads as a real chapter/section outline instead of
+  // one flat list regardless of level.
+  const landmarkTree = useMemo(() => {
+    const roots: LandmarkNode[] = [];
+    const stack: LandmarkNode[] = [];
+    for (const landmark of landmarks) {
+      const node: LandmarkNode = { ...landmark, children: [] };
+      while (stack.length && stack[stack.length - 1].level >= node.level) stack.pop();
+      if (stack.length === 0) roots.push(node);
+      else stack[stack.length - 1].children.push(node);
+      stack.push(node);
+    }
+    return roots;
+  }, [landmarks]);
 
   const sectionEls = useRef(new Map<string, HTMLDivElement>());
   const handleSectionRef = useCallback((el: HTMLDivElement | null) => {
@@ -197,21 +257,11 @@ function ReaderPageInner({ slug }: { slug: string }) {
             Contents{currentLandmark ? ` — currently in ${currentLandmark.label}` : ""}
           </summary>
           <nav className="mt-3 flex flex-col gap-1">
-            {landmarks.map((l) => (
-              <a
-                key={l.id}
-                href={`#section-${l.id}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  jumpToSection(l.id);
-                }}
-                className={`rounded-md px-2 py-1 hover:bg-muted/60 ${
-                  l.id === currentLandmark?.id ? "font-medium text-accent" : "text-muted-foreground"
-                }`}
-              >
-                {l.label}
-              </a>
-            ))}
+            <LandmarkLinks
+              nodes={landmarkTree}
+              currentId={currentLandmark?.id}
+              onJump={jumpToSection}
+            />
           </nav>
         </details>
       )}

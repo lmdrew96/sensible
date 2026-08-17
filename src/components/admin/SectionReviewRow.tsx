@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Doc } from "@convex/_generated/dataModel";
-import { Markdown, withSpeaker } from "@/components/Markdown";
 
 const STATUS_STYLES: Record<Doc<"sections">["status"], string> = {
   approved: "bg-green-100 text-green-800",
@@ -19,15 +18,29 @@ const GLOSS_STATUS_STYLES: Record<Doc<"glosses">["status"], string> = {
   suggested: "bg-amber-100 text-amber-800",
 };
 
-export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
+export function SectionReviewRow({
+  section,
+  isFirst,
+  isLast,
+}: {
+  section: Doc<"sections">;
+  isFirst: boolean;
+  isLast: boolean;
+}) {
   const [draft, setDraft] = useState(section.modernized ?? "");
+  const [originalDraft, setOriginalDraft] = useState(section.original);
   const [generating, setGenerating] = useState(false);
   const [glossing, setGlossing] = useState(false);
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">("idle");
+  const [originalSaveState, setOriginalSaveState] = useState<"idle" | "saving" | "saved">("idle");
   const generateDraft = useAction(api.modernize.generateDraft);
   const saveDraft = useMutation(api.sections.saveDraft);
+  const saveOriginal = useMutation(api.sections.saveOriginal);
   const approve = useMutation(api.sections.approve);
   const remove = useMutation(api.sections.remove);
+  const moveUp = useMutation(api.sections.moveUp);
+  const moveDown = useMutation(api.sections.moveDown);
+  const mergeWithNext = useMutation(api.sections.mergeWithNext);
 
   const glossesResult = useQuery(api.glosses.listForSection, { sectionId: section._id }) ?? [];
   // Highest-demand suggestions first, so reader-requested terms with several
@@ -51,6 +64,36 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
     }, AUTOSAVE_DELAY_MS);
     return () => clearTimeout(timer);
   }, [draft, saveDraft, section._id]);
+
+  const lastSavedOriginal = useRef(section.original);
+  useEffect(() => {
+    if (originalDraft === lastSavedOriginal.current) return;
+    setOriginalSaveState("saving");
+    const timer = setTimeout(async () => {
+      await saveOriginal({ sectionId: section._id, original: originalDraft, speaker: section.speaker });
+      lastSavedOriginal.current = originalDraft;
+      setOriginalSaveState("saved");
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [originalDraft, saveOriginal, section._id, section.speaker]);
+
+  // Content can change out from under this row without going through its own
+  // autosave -- most notably a "Merge with Next" that folds another
+  // section's text into this one. Re-sync local drafts whenever the server
+  // value diverges from what this row last wrote itself.
+  useEffect(() => {
+    if (section.modernized === lastSaved.current) return;
+    lastSaved.current = section.modernized ?? "";
+    setDraft(section.modernized ?? "");
+    setSaveState("idle");
+  }, [section.modernized]);
+
+  useEffect(() => {
+    if (section.original === lastSavedOriginal.current) return;
+    lastSavedOriginal.current = section.original;
+    setOriginalDraft(section.original);
+    setOriginalSaveState("idle");
+  }, [section.original]);
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -77,6 +120,13 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
     await remove({ sectionId: section._id });
   };
 
+  const handleMergeWithNext = async () => {
+    if (!confirm("Merge this section with the next one? The next section will be absorbed and deleted.")) {
+      return;
+    }
+    await mergeWithNext({ sectionId: section._id });
+  };
+
   const handleSuggestGlosses = async () => {
     setGlossing(true);
     try {
@@ -89,9 +139,27 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
   return (
     <div className="panel mb-4 p-5">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          Section {section.order + 1}
-        </span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => moveUp({ sectionId: section._id })}
+            disabled={isFirst}
+            title="Move section up"
+            className="rounded-md border border-border px-1.5 py-0.5 text-xs text-muted-foreground disabled:opacity-30"
+          >
+            ↑
+          </button>
+          <button
+            onClick={() => moveDown({ sectionId: section._id })}
+            disabled={isLast}
+            title="Move section down"
+            className="rounded-md border border-border px-1.5 py-0.5 text-xs text-muted-foreground disabled:opacity-30"
+          >
+            ↓
+          </button>
+          <span className="ml-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Section {section.order + 1}
+          </span>
+        </div>
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLES[section.status]}`}
         >
@@ -100,8 +168,20 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="mb-1 text-xs text-muted-foreground">Original</p>
-          <Markdown className="prose-sm">{withSpeaker(section.original, section.speaker)}</Markdown>
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Original{section.speaker ? ` — ${section.speaker}` : ""}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {originalSaveState === "saving" ? "Saving…" : originalSaveState === "saved" ? "Saved" : ""}
+            </p>
+          </div>
+          <textarea
+            className="h-full min-h-32 w-full rounded-md border border-border bg-background p-2 text-base outline-none focus:border-accent sm:text-sm"
+            value={originalDraft}
+            onChange={(e) => setOriginalDraft(e.target.value)}
+            placeholder="Type the original passage…"
+          />
         </div>
         <div>
           <div className="mb-1 flex items-center justify-between">
@@ -120,26 +200,34 @@ export function SectionReviewRow({ section }: { section: Doc<"sections"> }) {
           />
         </div>
       </div>
-      <div className="mt-3 flex gap-2">
-        <button onClick={handleGenerate} disabled={generating} className="btn-primary py-1.5 text-sm">
+      <div className="mt-10 flex gap-2">
+        <button onClick={handleGenerate} disabled={generating} className="btn-primary py-1.5 text-xs">
           {generating ? "Generating…" : draft ? "Regenerate Draft" : "Generate Draft"}
         </button>
         <button
           onClick={handleApprove}
-          className="rounded-md bg-green-700 px-3 py-1.5 text-sm text-white shadow-sm"
+          className="rounded-md bg-green-700 px-3 py-1.5 text-xs text-white shadow-sm"
         >
           Approve
         </button>
         <button
           onClick={handleSuggestGlosses}
           disabled={glossing || !draft}
-          className="btn-ghost py-1.5 text-sm disabled:opacity-50"
+          className="btn-ghost py-1.5 text-xs disabled:opacity-50"
         >
           {glossing ? "Suggesting…" : glosses.length ? "Re-suggest Glosses" : "Suggest Glosses"}
         </button>
         <button
+          onClick={handleMergeWithNext}
+          disabled={isLast}
+          title={isLast ? "No following section to merge with" : "Merge this section into the next"}
+          className="ml-auto btn-ghost py-1.5 text-xs disabled:opacity-50"
+        >
+          Merge with Next ↓
+        </button>
+        <button
           onClick={handleDelete}
-          className="ml-auto rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50"
+          className="rounded-md border border-red-300 px-3 py-1.5 text-xs text-red-700 hover:bg-red-50"
         >
           Delete
         </button>

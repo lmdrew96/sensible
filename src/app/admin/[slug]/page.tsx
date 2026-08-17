@@ -4,7 +4,31 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 import { SectionReviewRow } from "@/components/admin/SectionReviewRow";
+
+// A thin "insert here" affordance dropped between section rows (and before
+// the first / after the last) so a new blank section can be added at any
+// position without a separate "which slot?" picker.
+function InsertSectionDivider({
+  textId,
+  afterSectionId,
+}: {
+  textId: Id<"texts">;
+  afterSectionId?: Id<"sections">;
+}) {
+  const insertAfter = useMutation(api.sections.insertAfter);
+  return (
+    <div className="group -my-2 flex justify-center py-2">
+      <button
+        onClick={() => insertAfter({ textId, afterSectionId })}
+        className="rounded-full border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:border-accent hover:text-accent"
+      >
+        + Insert section
+      </button>
+    </div>
+  );
+}
 
 export default function AdminTextPage() {
   const params = useParams<{ slug: string }>();
@@ -51,7 +75,7 @@ export default function AdminTextPage() {
 
   return (
     <main className="mx-auto max-w-5xl p-8 min-w-3/4">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="font-header text-2xl font-semibold text-accent">{text.title}</h1>
@@ -71,13 +95,13 @@ export default function AdminTextPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href={`/read/${text.slug}`} className="btn-ghost py-1.5 text-sm">
+          <Link href={`/read/${text.slug}`} className="btn-ghost text-center py-1.5 text-xs">
             View reader
           </Link>
           <button
             onClick={handleApproveAll}
             disabled={draftCount === 0}
-            className="rounded-md bg-green-700 px-3 py-1.5 text-sm text-white shadow-sm disabled:opacity-40"
+            className="rounded-md bg-green-700 px-3 py-1.5 text-xs text-white shadow-sm disabled:opacity-40"
           >
             Approve All ({draftCount})
           </button>
@@ -92,7 +116,7 @@ export default function AdminTextPage() {
                 ? "Stop the sweep after its current batch finishes"
                 : "Scans every approved section that hasn't been checked yet and suggests glosses for the ones that need them"
             }
-            className={`rounded-md border px-3 py-1.5 text-sm disabled:opacity-40 ${
+            className={`rounded-md border px-3 py-1.5 text-xs disabled:opacity-40 ${
               text.glossSweepActive
                 ? "border-amber-400 bg-amber-100 text-amber-800"
                 : "border-border"
@@ -109,14 +133,22 @@ export default function AdminTextPage() {
                 ? `${unapprovedCount} section${unapprovedCount === 1 ? "" : "s"} not yet approved`
                 : undefined
             }
-            className="btn-primary py-1.5 text-sm disabled:opacity-40"
+            className="btn-primary py-1.5 text-xs disabled:opacity-40"
           >
             {text.status === "published" ? "Published" : "Publish"}
           </button>
         </div>
       </div>
-      {sections?.map((section) => (
-        <SectionReviewRow key={section._id} section={section} />
+      <InsertSectionDivider textId={text._id} afterSectionId={undefined} />
+      {sections?.map((section, i) => (
+        <div key={section._id}>
+          <SectionReviewRow
+            section={section}
+            isFirst={i === 0}
+            isLast={i === sections.length - 1}
+          />
+          <InsertSectionDivider textId={text._id} afterSectionId={section._id} />
+        </div>
       ))}
     </main>
   );
