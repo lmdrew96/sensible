@@ -274,6 +274,91 @@ const TEXTS: TextConfig[] = [
     // page, no source repo) -- stays on Gutenberg until they publish it.
     fetch: { type: "gutenberg", gutenbergId: 5200 },
   },
+  {
+    title: "The Crisis, No. 1",
+    slug: "the-crisis-no-1",
+    author: "Thomas Paine",
+    year: "1776",
+    sourceUrl: "https://standardebooks.org/ebooks/thomas-paine/the-american-crisis",
+    difficultyType: "vocabulary",
+    isTranslation: false,
+    libraryOrder: 11,
+    // Standard Ebooks' "The American Crisis" collects all thirteen numbered
+    // papers plus supernumeraries; this is the first paper only ("These are
+    // the times that try men's souls").
+    fetch: {
+      type: "standardEbooksProse",
+      repo: "thomas-paine_the-american-crisis",
+      files: ["crisis-1.xhtml"],
+    },
+  },
+  {
+    title: "Declaration of Sentiments",
+    slug: "declaration-of-sentiments",
+    author: "Elizabeth Cady Stanton",
+    year: "1848",
+    sourceUrl: "https://en.wikisource.org/wiki/Declaration_of_Sentiments",
+    difficultyType: "syntax",
+    isTranslation: false,
+    libraryOrder: 12,
+    // No Standard Ebooks edition (a convention document, not literary work),
+    // same as the Declaration of Independence it deliberately mirrors.
+    // Wikisource carries a clean proofread transcription.
+    fetch: {
+      type: "wikisource",
+      pages: ["Declaration_of_Sentiments"],
+    },
+  },
+  {
+    title: "The Gettysburg Address",
+    slug: "gettysburg-address",
+    author: "Abraham Lincoln",
+    year: "1863",
+    sourceUrl: "https://en.wikisource.org/wiki/Gettysburg_Address_(Bliss_copy)",
+    difficultyType: "vocabulary",
+    isTranslation: false,
+    libraryOrder: 13,
+    // No Standard Ebooks edition; the manuscript lives at the Library of
+    // Congress, not the National Archives. The Bliss copy is the standard
+    // reading text -- the version Lincoln himself signed and titled.
+    fetch: {
+      type: "wikisource",
+      pages: ["Gettysburg_Address_(Bliss_copy)"],
+    },
+  },
+  {
+    title: "What to the Slave is the Fourth of July?",
+    slug: "what-to-the-slave-is-the-fourth-of-july",
+    author: "Frederick Douglass",
+    year: "1852",
+    sourceUrl: "https://en.wikisource.org/wiki/What_to_the_Slave_Is_the_Fourth_of_July",
+    difficultyType: "syntax",
+    isTranslation: false,
+    libraryOrder: 14,
+    // Speech, not a Standard Ebooks literary work; Wikisource carries the
+    // full oration on a single proofread page.
+    fetch: {
+      type: "wikisource",
+      pages: ["What_to_the_Slave_Is_the_Fourth_of_July"],
+    },
+  },
+  {
+    title: "A Modest Proposal",
+    slug: "a-modest-proposal",
+    author: "Jonathan Swift",
+    year: "1729",
+    sourceUrl: "https://en.wikisource.org/wiki/A_Modest_Proposal",
+    difficultyType: "syntax",
+    isTranslation: false,
+    libraryOrder: 15,
+    // Standard Ebooks has no edition of this pamphlet (only Swift's
+    // Gulliver's Travels, plus an Essays collection still marked "wanted").
+    // Wikisource carries a clean proofread transcription.
+    fetch: {
+      type: "wikisource",
+      pages: ["A_Modest_Proposal"],
+    },
+  },
 ];
 
 // ---- shared text-cleanup helpers -------------------------------------------------
@@ -478,13 +563,56 @@ async function fetchArchivesParagraphs(
   return extractParagraphs(slice, "p|h2|h3");
 }
 
+// Strips a container element and its full contents by tag+class, tracking
+// open/close depth so nested same-tag elements (a licenseContainer full of
+// nested <div>s, e.g.) don't truncate the match at the first inner close
+// tag. Used for Wikisource's page-level chrome -- editorial notice boxes,
+// the header/notes block, and the license footer -- which carry their own
+// stray <p> tags with no article text in them, so a plain <p> regex can't
+// tell them apart from real paragraphs otherwise.
+function stripElementByClass(html: string, tag: string, className: string): string {
+  const openRe = new RegExp(`<${tag}\\b[^>]*\\bclass="[^"]*\\b${className}\\b[^"]*"[^>]*>`, "i");
+  const tagRe = new RegExp(`<${tag}\\b[^>]*>|<\\/${tag}>`, "gi");
+  let result = html;
+  let open = openRe.exec(result);
+  while (open) {
+    tagRe.lastIndex = open.index;
+    let depth = 0;
+    let endIdx = -1;
+    let m: RegExpExecArray | null;
+    while ((m = tagRe.exec(result))) {
+      depth += m[0].startsWith("</") ? -1 : 1;
+      if (depth === 0) {
+        endIdx = tagRe.lastIndex;
+        break;
+      }
+    }
+    if (endIdx === -1) break; // malformed; bail rather than corrupt the rest
+    result = result.slice(0, open.index) + result.slice(endIdx);
+    open = openRe.exec(result);
+  }
+  return result;
+}
+
+function stripWikisourceBoilerplate(html: string): string {
+  return stripElementByClass(
+    stripElementByClass(
+      stripElementByClass(stripElementByClass(html, "table", "ambox"), "div", "ws-noexport"),
+      "div",
+      "licenseContainer",
+    ),
+    "div",
+    "licensetpl",
+  );
+}
+
 async function fetchWikisourceParagraphs(pages: string[]): Promise<Paragraph[]> {
   const paragraphs: Paragraph[] = [];
   for (const page of pages) {
     const html = await fetchText(
       `https://en.wikisource.org/api/rest_v1/page/html/${encodeURIComponent(page)}`,
     );
-    paragraphs.push(...extractParagraphs(stripMediaWikiAttrs(html), "p"));
+    paragraphs.push(...extractParagraphs(stripWikisourceBoilerplate(stripMediaWikiAttrs(html)), "p"));
   }
   return paragraphs;
 }
